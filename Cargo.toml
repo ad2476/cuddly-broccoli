@@ -1,0 +1,13 @@
+[package]
+name = "opengl"
+version = "0.1.0"
+authors = ["Arun Drelich <arun@arundreli.ch>"]
+
+[dependencies]
+sdl2 = "0.31.0"
+gl = "0.10.0"
+failure = "0.1"
+glm = "0.2.3"
+
+[build-dependencies]
+walkdir = "2.1"
