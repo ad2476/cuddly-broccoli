@@ -5,6 +5,11 @@ use render_gl;
 use resources::ResourceLoader;
 use shape::{self,Drawable};
 
+/// Scene implementation.
+///
+/// A scene contains a list of `Drawable` objects to render.
+/// The scene will eventually also need to contain things such as
+/// cameras, lights, and more.
 pub struct Scene {
     shapes: Vec<Box<Drawable>>,
     _loader: ResourceLoader,
@@ -34,6 +39,7 @@ impl Scene {
         Scene { shapes, _loader: loader }
     }
 
+    /// Render the objects in the scene.
     pub fn render(&self) {
         for shape in &self.shapes {
             shape.draw();

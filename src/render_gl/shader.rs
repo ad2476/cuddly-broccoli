@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use resources::{self, ResourceLoader};
 
+/// Error enum for shaders
 #[derive(Debug, Fail)]
 pub enum Error {
     #[fail(display = "Failed to load resource {}", name)]
@@ -19,11 +20,16 @@ pub enum Error {
     EncodingError,
 } 
 
+/// Wraps OpenGL shader program object.
+///
+/// Stores a handle to the openGL object for a shader program,
+/// and exposes safe methods on that object.
 pub struct Program {
     id: gl::types::GLuint,
 }
 
 impl Program {
+    /// Load a shader program from resource
     pub fn from_res(
         res: &ResourceLoader,
         name: &str
@@ -43,6 +49,7 @@ impl Program {
             .map_err(|m| Error::LinkError { name: name.into(), message: m })
     }
 
+    /// Create a shader program from a list of `Shader` structs
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
         let program_id = unsafe { gl::CreateProgram() };
         for shader in shaders {
@@ -78,10 +85,12 @@ impl Program {
         Ok(Program { id: program_id })
     }
 
+    /// Use this program (safely calls `glUseProgram`).
     pub fn set_used(&self) {
         unsafe { gl::UseProgram(self.id); }
     }
 
+    /// Stop using this program (safely calls `glUseProgram(0)`).
     pub fn unset_used(&self) {
         unsafe { gl::UseProgram(0); }
     }
@@ -93,11 +102,13 @@ impl Drop for Program {
     }
 }
 
+/// Wraps a shader source object loaded into OpenGL.
 pub struct Shader {
     id: gl::types::GLuint,
 }
 
 impl Shader {
+    /// Load shader source from resource.
     pub fn from_res(
         res: &ResourceLoader,
         path: &Path
@@ -123,6 +134,7 @@ impl Shader {
             .map_err(|m| Error::CompileError { name: name.into(), message: m})
     }
 
+    /// Load shader source from null-terminated buffer.
     pub fn from_source(
         source: &CStr, // need null-terminated buffer
         shader_type: gl::types::GLuint
@@ -156,10 +168,12 @@ impl Shader {
         Ok(Shader {id} )
     }
 
+    /// Create vertex source from null-terminated buffer.
     pub fn from_vert_source(source: &CStr) -> Result<Shader, String> {
         Shader::from_source(source, gl::VERTEX_SHADER)
     }
 
+    /// Create fragment source  from null-terminated buffer.
     pub fn from_frag_source(source: &CStr) -> Result<Shader, String> {
         Shader::from_source(source, gl::FRAGMENT_SHADER)
     }

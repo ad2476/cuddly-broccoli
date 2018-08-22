@@ -122,6 +122,10 @@ impl Drop for VBO {
     }
 }
 
+/// Vertex Attribute Object.
+///
+/// Associates attributes with a VBO and is responsible
+/// for drawing the vertex buffer.
 pub struct VAO {
     id: gl::types::GLuint,
     num_vertices: gl::types::GLsizei,
