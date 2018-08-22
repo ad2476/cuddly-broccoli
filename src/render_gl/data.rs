@@ -90,12 +90,12 @@ impl VBO {
     }
 
     // FIXME this bind-unbind semantics feels unsafe/not rusty
-    pub fn bind(&self) {
+    fn bind(&self) {
         unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, self.id); }
     }
 
     /// Enable this vertex array. VBO **must be bound**.
-    pub fn enable(&self) {
+    fn enable(&self) {
         for m in &self.markers {
             unsafe {
                 gl::EnableVertexAttribArray(m.name.into());
@@ -111,7 +111,7 @@ impl VBO {
         }
     }
 
-    pub fn unbind(&self) {
+    fn unbind(&self) {
         unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0); }
     }
 }

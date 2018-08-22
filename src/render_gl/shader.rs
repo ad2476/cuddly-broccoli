@@ -81,6 +81,10 @@ impl Program {
     pub fn set_used(&self) {
         unsafe { gl::UseProgram(self.id); }
     }
+
+    pub fn unset_used(&self) {
+        unsafe { gl::UseProgram(0); }
+    }
 }
 
 impl Drop for Program {
