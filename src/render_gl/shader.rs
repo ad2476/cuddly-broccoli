@@ -8,9 +8,9 @@ use resources::{self, ResourceLoader};
 /// Error enum for shaders
 #[derive(Debug, Fail)]
 pub enum Error {
-    #[fail(display = "Failed to load resource {}", name)]
+    #[fail(display = "Failed to load {}", name)]
     ResourceLoadError { name: String, #[cause] inner: resources::Error },
-    #[fail(display = "Can not determine shader type for resource {}", name)]
+    #[fail(display = "Can not determine shader type for {}", name)]
     UnknownShaderType { name: String },
     #[fail(display = "Failed to compile shader {}: {}", name, message)]
     CompileError { name: String, message: String},

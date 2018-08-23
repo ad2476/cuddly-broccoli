@@ -2,8 +2,22 @@ use std::path::Path;
 use std::rc::Rc;
 
 use render_gl;
-use resources::ResourceLoader;
+use resources::{self, ResourceLoader};
 use shape::{self,Drawable};
+
+#[derive(Debug, Fail)]
+pub enum Error {
+    #[fail(display = "Failed to initialise ResourceLoader for {}", name)]
+    ResourceLoadError { name: String, #[cause] inner: resources::Error },
+    #[fail(display = "Failed to create shader: {}", inner)]
+    ShaderError { #[cause] inner: render_gl::Error },
+}
+
+impl From<render_gl::Error> for Error {
+    fn from(other: render_gl::Error) -> Self {
+        Error::ShaderError { inner: other }
+    }
+}
 
 /// Scene implementation.
 ///
@@ -16,12 +30,13 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn new(assets_dir: &str) -> Scene {
-        let loader = ResourceLoader::new(Path::new(assets_dir)).unwrap();
+    pub fn new(assets_dir: &str) -> Result<Scene, Error> {
+        let loader = ResourceLoader::new(Path::new(assets_dir))
+            .map_err(|e| Error::ResourceLoadError { name: assets_dir.into(), inner: e })?;
         println!("{}", loader);
-        
+
         let shader_program = Rc::new(
-            render_gl::Program::from_res(&loader, "shaders/triangle").unwrap()
+            render_gl::Program::from_res(&loader, "shaders/triangle")?
         );
 
         let triangle1 = shape::Triangle::new(&shader_program);
@@ -36,7 +51,7 @@ impl Scene {
         let triangle2 = shape::Triangle::from_data(data, &shader_program);
         shapes.push(Box::new(triangle2));
 
-        Scene { shapes, _loader: loader }
+        Ok(Scene { shapes, _loader: loader })
     }
 
     /// Render the objects in the scene.
