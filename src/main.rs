@@ -15,7 +15,7 @@ const FPS: u64 = 60;
 
 fn run() -> Result<(), failure::Error> {
     let mut view = ui::View::new("App", 900, 700).map_err(err_msg)?;
-    let scene = ui::Scene::new("assets/").map_err(err_msg)?;
+    let scene = ui::Scene::new("assets/")?;
 
     'main: loop {
         for event in view.poll_events() {
@@ -38,8 +38,30 @@ fn run() -> Result<(), failure::Error> {
     Ok(())
 }
 
+fn failure_backtrace(e: failure::Error) -> String {
+    use std::fmt::Write;
+
+    let mut result = String::new();
+    for (i, cause) in e.iter_chain().collect::<Vec<_>>().into_iter().rev().enumerate() {
+        if i > 0 {
+            let _ = writeln!(&mut result, "which caused the following error:");
+        }
+        let _ = write!(&mut result, " {}", cause);
+        if let Some(backtrace) = cause.backtrace() {
+            let bt_str = format!("{}", backtrace);
+            if bt_str.len() > 0 {
+                let _ = writeln!(&mut result, " at {}", backtrace);
+            } else {
+                let _ = writeln!(&mut result);
+            }
+        }
+    }
+
+    result
+}
+
 fn main() {
     if let Err(e) = run() {
-        println!("{}", e);
+        println!("{}", failure_backtrace(e));
     }
 }

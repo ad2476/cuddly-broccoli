@@ -10,19 +10,18 @@ use render_gl::types;
 #[repr(C, packed)]
 pub struct Vertex {
     pos: glm::Vec3,
-//    col: glm::Vec3,
+    col: glm::Vec3,
 }
 
 impl Vertex {
-    pub fn new(x: f32, y: f32, z: f32) -> Vertex {
-        let pos = glm::vec3(x, y, z);
-        Vertex { pos }
+    pub fn new(pos: glm::Vec3, col: glm::Vec3) -> Vertex {
+        Vertex { pos, col }
     }
 }
 
-impl From<(f32,f32,f32)> for Vertex {
-    fn from(other: (f32, f32, f32)) -> Vertex {
-        Vertex::new(other.0, other.1, other.2)
+impl From<(glm::Vec3, glm::Vec3)> for Vertex {
+    fn from(other: (glm::Vec3, glm::Vec3)) -> Vertex {
+        Vertex::new(other.0, other.1)
     }
 }
 

@@ -2,6 +2,7 @@ use gl;
 use std::rc::Rc;
 use render_gl::types::*;
 use render_gl::{self, VBOAttribMarker};
+use glm::{self,vec3};
 
 use shape::Drawable;
 
@@ -14,9 +15,9 @@ pub struct Triangle {
 impl Triangle {
     pub fn new(program: &Rc<render_gl::Program>) -> Triangle {
         let vertex_data: Vec<render_gl::Vertex> = vec![
-            (-0.5, -0.5, 0.0).into(),
-            (0.5, -0.5, 0.0).into(),
-            (0.0, 0.5, 0.0).into()
+            (vec3(-0.5, -0.5, 0.0), vec3(1.0,0.0,0.0)).into(),
+            (vec3(0.5, -0.5, 0.0), vec3(0.0, 1.0, 0.0)).into(),
+            (vec3(0.0, 0.5, 0.0), vec3(0.0, 0.0, 1.0)).into()
         ];
         Triangle::from_data(vertex_data, program)
     }
@@ -31,7 +32,13 @@ impl Triangle {
                 VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                0)
+                0),
+            VBOAttribMarker::new(
+                ShaderAttrib::COLOR,
+                VertexAttrib::FLOAT,
+                3,
+                gl::FALSE,
+                ::std::mem::size_of::<glm::Vec3>())
         ];
         let vbo = render_gl::VBO::from_data(
             &data,

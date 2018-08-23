@@ -12,7 +12,7 @@ pub enum Error {
     ResourceLoadError { name: String, #[cause] inner: resources::Error },
     #[fail(display = "Can not determine shader type for {}", name)]
     UnknownShaderType { name: String },
-    #[fail(display = "Failed to compile shader {}: {}", name, message)]
+    #[fail(display = "Failed to compile shader {}:\n\t{}", name, message)]
     CompileError { name: String, message: String},
     #[fail(display = "Failed to link program {}: {}", name, message)]
     LinkError { name: String, message: String},

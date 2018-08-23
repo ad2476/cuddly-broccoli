@@ -9,7 +9,7 @@ use shape::{self,Drawable};
 pub enum Error {
     #[fail(display = "Failed to initialise ResourceLoader for {}", name)]
     ResourceLoadError { name: String, #[cause] inner: resources::Error },
-    #[fail(display = "Failed to create shader: {}", inner)]
+    #[fail(display = "Failed to create shader")]
     ShaderError { #[cause] inner: render_gl::Error },
 }
 
@@ -43,13 +43,13 @@ impl Scene {
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
         shapes.push(Box::new(triangle1));
 
-        let data: Vec<render_gl::Vertex> = vec![
-            (-0.5, 0.5, 0.0).into(),
-            (0.0, -0.5, 0.0).into(),
-            (0.5, 0.5, 0.0).into()
-        ];
-        let triangle2 = shape::Triangle::from_data(data, &shader_program);
-        shapes.push(Box::new(triangle2));
+        //let data: Vec<render_gl::Vertex> = vec![
+        //    (-0.5, 0.5, 0.0).into(),
+        //    (0.0, -0.5, 0.0).into(),
+        //    (0.5, 0.5, 0.0).into()
+        //];
+        //let triangle2 = shape::Triangle::from_data(data, &shader_program);
+        //shapes.push(Box::new(triangle2));
 
         Ok(Scene { shapes, _loader: loader })
     }
