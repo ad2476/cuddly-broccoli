@@ -1,6 +1,8 @@
-mod shader;
-pub mod types;
+pub mod shader;
+pub mod uniform;
 mod data;
+pub mod types;
 
-pub use self::shader::{Shader, Program, Error};
+pub use self::shader::{Shader, Program};
 pub use self::data::{VBO,VBOAttribMarker,Vertex,VAO};
+pub use self::uniform::{UniformSet};

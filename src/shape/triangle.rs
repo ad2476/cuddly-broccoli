@@ -2,22 +2,23 @@ use gl;
 use std::rc::Rc;
 use render_gl::types::*;
 use render_gl::{self, VBOAttribMarker};
-use glm::{self,vec3};
+use glm::{self,vec3,vec2};
 
-use shape::Drawable;
+use shape::{Drawable, DrawError};
 
 pub struct Triangle {
     program: Rc<render_gl::Program>,
     _vbo: render_gl::VBO,
     vao: render_gl::VAO,
+    time: f32,
 }
 
 impl Triangle {
     pub fn new(program: &Rc<render_gl::Program>) -> Triangle {
         let vertex_data: Vec<render_gl::Vertex> = vec![
-            (vec3(-0.5, -0.5, 0.0), vec3(1.0,0.0,0.0)).into(),
-            (vec3(0.5, -0.5, 0.0), vec3(0.0, 1.0, 0.0)).into(),
-            (vec3(0.0, 0.5, 0.0), vec3(0.0, 0.0, 1.0)).into()
+            (vec3(-0.5, -0.5, 0.0), vec2(0.0, 0.0)).into(),
+            (vec3(0.5, -0.5, 0.0), vec2(1.0, 0.0)).into(),
+            (vec3(0.0, 0.5, 0.0), vec2(0.5, 1.0)).into()
         ];
         Triangle::from_data(vertex_data, program)
     }
@@ -34,7 +35,7 @@ impl Triangle {
                 gl::FALSE,
                 0),
             VBOAttribMarker::new(
-                ShaderAttrib::COLOR,
+                ShaderAttrib::TEXCOORD0,
                 VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
@@ -52,17 +53,26 @@ impl Triangle {
         Triangle {
             program: Rc::clone(program),
             _vbo: vbo,
-            vao
+            vao,
+            time: 0.
         }
     }
 }
 
 impl Drawable for Triangle {
-    fn draw(&self) {
-        self.program.set_used();
+    fn tick(&mut self) {
+        self.time += 0.05;
+    }
+
+    fn draw(&self) -> Result<(), DrawError> {
+        self.program.bind();
+        self.program.set_uniform("u_time", &self.time)?;
+
         self.vao.bind();
         self.vao.draw();
         self.vao.unbind();
+
+        Ok(())
     }
 }
 

@@ -10,12 +10,20 @@ pub enum Error {
     #[fail(display = "Failed to initialise ResourceLoader for {}", name)]
     ResourceLoadError { name: String, #[cause] inner: resources::Error },
     #[fail(display = "Failed to create shader")]
-    ShaderError { #[cause] inner: render_gl::Error },
+    ShaderError { #[cause] inner: render_gl::shader::Error },
+    #[fail(display = "Error during rendering")]
+    RenderError { #[cause] inner: shape::DrawError},
 }
 
-impl From<render_gl::Error> for Error {
-    fn from(other: render_gl::Error) -> Self {
+impl From<render_gl::shader::Error> for Error {
+    fn from(other: render_gl::shader::Error) -> Self {
         Error::ShaderError { inner: other }
+    }
+}
+
+impl From<shape::DrawError> for Error {
+    fn from(other: shape::DrawError) -> Self {
+        Error::RenderError { inner: other }
     }
 }
 
@@ -43,21 +51,24 @@ impl Scene {
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
         shapes.push(Box::new(triangle1));
 
-        //let data: Vec<render_gl::Vertex> = vec![
-        //    (-0.5, 0.5, 0.0).into(),
-        //    (0.0, -0.5, 0.0).into(),
-        //    (0.5, 0.5, 0.0).into()
-        //];
-        //let triangle2 = shape::Triangle::from_data(data, &shader_program);
-        //shapes.push(Box::new(triangle2));
-
+        for shape in &mut shapes {
+            shape.init()?;
+        }
         Ok(Scene { shapes, _loader: loader })
     }
 
-    /// Render the objects in the scene.
-    pub fn render(&self) {
-        for shape in &self.shapes {
-            shape.draw();
+    pub fn tick(&mut self) {
+        for shape in &mut self.shapes {
+            shape.tick();
         }
+    }
+
+    /// Render the objects in the scene.
+    pub fn render(&self) -> Result<(), Error> {
+        for shape in &self.shapes {
+            shape.draw()?;
+        }
+        render_gl::Program::bind_default();
+        Ok(())
     }
 }

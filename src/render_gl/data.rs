@@ -10,17 +10,17 @@ use render_gl::types;
 #[repr(C, packed)]
 pub struct Vertex {
     pos: glm::Vec3,
-    col: glm::Vec3,
+    uv: glm::Vec2,
 }
 
 impl Vertex {
-    pub fn new(pos: glm::Vec3, col: glm::Vec3) -> Vertex {
-        Vertex { pos, col }
+    pub fn new(pos: glm::Vec3, uv: glm::Vec2) -> Vertex {
+        Vertex { pos, uv }
     }
 }
 
-impl From<(glm::Vec3, glm::Vec3)> for Vertex {
-    fn from(other: (glm::Vec3, glm::Vec3)) -> Vertex {
+impl From<(glm::Vec3, glm::Vec2)> for Vertex {
+    fn from(other: (glm::Vec3, glm::Vec2)) -> Vertex {
         Vertex::new(other.0, other.1)
     }
 }

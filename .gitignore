@@ -1,4 +1,7 @@
 /target
 **/*.rs.bk
 
+.idea/
+*iml
+
 *.swp

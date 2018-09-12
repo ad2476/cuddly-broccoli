@@ -1,8 +1,9 @@
 use gl;
-use std;
+use std::collections::HashMap;
 use std::ffi::{CString, CStr, OsStr};
 use std::path::{Path, PathBuf};
 
+use render_gl::{uniform, UniformSet};
 use resources::{self, ResourceLoader};
 
 /// Error enum for shaders
@@ -16,9 +17,12 @@ pub enum Error {
     CompileError { name: String, message: String},
     #[fail(display = "Failed to link program {}: {}", name, message)]
     LinkError { name: String, message: String},
-    #[fail(display = "Path encoding invalid")]
+    #[fail(display = "Encoding invalid")]
     EncodingError,
-} 
+}
+
+/// Type alias for mapping uniform names to `GLint` identifiers.
+type UniformMap = HashMap<String, Vec<gl::types::GLint>>;
 
 /// Wraps OpenGL shader program object.
 ///
@@ -26,10 +30,15 @@ pub enum Error {
 /// and exposes safe methods on that object.
 pub struct Program {
     id: gl::types::GLuint,
+    uniforms: UniformMap,
 }
 
 impl Program {
-    /// Load a shader program from resource
+    /// Construct a shader program from resource.
+    ///
+    /// Here, `name` assumes there exist vertex and fragment shaders
+    /// within the resource system `name.vert` and `name.frag`. `name`
+    /// should be a relative path from the resource root.
     pub fn from_res(
         res: &ResourceLoader,
         name: &str
@@ -49,7 +58,7 @@ impl Program {
             .map_err(|m| Error::LinkError { name: name.into(), message: m })
     }
 
-    /// Create a shader program from a list of `Shader` structs
+    /// Construct a shader program from a list of `Shader` structs.
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
         let program_id = unsafe { gl::CreateProgram() };
         for shader in shaders {
@@ -71,7 +80,7 @@ impl Program {
                 gl::GetProgramInfoLog(
                     program_id,
                     len,
-                    std::ptr::null_mut(),
+                    ::std::ptr::null_mut(),
                     error.as_ptr() as *mut gl::types::GLchar
                 );
             }
@@ -82,17 +91,117 @@ impl Program {
             unsafe { gl::DetachShader(program_id, shader.id); }
         }
 
-        Ok(Program { id: program_id })
+        let mut program = Program { id: program_id, uniforms: HashMap::new() };
+        program.discover_uniforms()?;
+        Ok(program)
     }
 
     /// Use this program (safely calls `glUseProgram`).
-    pub fn set_used(&self) {
+    pub fn bind(&self) {
         unsafe { gl::UseProgram(self.id); }
     }
 
     /// Stop using this program (safely calls `glUseProgram(0)`).
-    pub fn unset_used(&self) {
+    pub fn unbind(&self) {
         unsafe { gl::UseProgram(0); }
+    }
+
+    /// Static way to call `unbind()`.
+    pub fn bind_default() {
+        unsafe { gl::UseProgram(0); }
+    }
+
+    /// Set an element of a uniform array.
+    ///
+    /// For example, consider your shader contains a `uniform mat3 lights[10]`.
+    /// ```
+    /// # pass `light_data` to the third light
+    /// program.set_uniform_by_index("lights", light_data, 2);
+    /// ```
+    pub fn set_uniform_by_index<T: UniformSet>(
+        &self,
+        name: &str,
+        data: &T,
+        index: usize
+    ) -> Result<(), uniform::Error> {
+        let slots = self.uniforms.get(name)
+            .ok_or(uniform::Error::NotFoundError { name: name.to_string() })?;
+        let loc = slots.get(index)
+            .ok_or(uniform::Error::IndexError { index })?;
+        Ok(data.set_uniform_gl(*loc))
+    }
+
+    /// Convenience wrapper for `set_uniform_by_index` for non-array uniforms.
+    /// Always sets index `0`.
+    pub fn set_uniform<T: UniformSet>(
+        &self,
+        name: &str,
+        data: &T
+    ) -> Result<(), uniform::Error> {
+        self.set_uniform_by_index(name, data, 0)
+    }
+
+    fn discover_uniforms(&mut self) -> Result<(), String> {
+        let mut uniform_count: gl::types::GLint = 0;
+        self.bind();
+        unsafe {
+            gl::GetProgramiv(self.id, gl::ACTIVE_UNIFORMS, &mut uniform_count);
+        }
+        for i in 0..uniform_count {
+            let buffer_size: gl::types::GLsizei = 256;
+            let mut name_length: gl::types::GLsizei = 0;
+            let mut array_size: gl::types::GLsizei = 0;
+            let mut dtype: gl::types::GLenum = 0;
+            let name = alloc_nul_cstring(buffer_size as usize);
+            unsafe {
+                gl::GetActiveUniform(self.id,
+                    i as u32,
+                    buffer_size,
+                    &mut name_length,
+                    &mut array_size,
+                    &mut dtype,
+                    name.as_ptr() as *mut gl::types::GLchar
+                );
+            }
+            println!("discovered uniform: {}, size: {}", name.to_string_lossy(), array_size);
+            self.add_uniform(&name, array_size as usize)?;
+        }
+        Program::bind_default();
+        Ok(())
+    }
+
+    // Collect all elements of the uniform. Provides support for uniform arrays.
+    fn add_uniform(
+        &mut self,
+        name: &CString,
+        size: usize
+    ) -> Result<(), String> {
+        // Create a new String,
+        // remove any array symbols, trailing zeros from name:
+        let clean_name = name.clone().into_string()
+            .map_err(|e| format!("{}", e))?
+            .trim_right_matches(char::from(0))
+            .replace("[0]", "");
+
+        let mut array: Vec<gl::types::GLint> = Vec::with_capacity(size);
+        // insert the first array slot - or scalar element
+        array.push(unsafe {
+            gl::GetUniformLocation(self.id, name.as_ptr())
+        });
+        
+        // if this is a uniform array, insert the next slots
+        let array_size: u8 = ::std::cmp::min(size as u8, 9);
+        let name_size = name.as_bytes().len();
+        for i in 1..array_size {
+            let mut enumerated_name = name.clone().into_bytes();
+            enumerated_name[name_size - 2] = b'0' + i;
+            array.push(unsafe {
+                gl::GetUniformLocation(self.id, enumerated_name.as_ptr() as *const gl::types::GLchar)
+            });
+        }
+
+        self.uniforms.insert(clean_name, array);
+        Ok(())
     }
 }
 
@@ -141,7 +250,7 @@ impl Shader {
     ) -> Result<Shader, String> {
         let id = unsafe { gl::CreateShader(shader_type) };
         unsafe {
-            gl::ShaderSource(id, 1, &source.as_ptr(), std::ptr::null());
+            gl::ShaderSource(id, 1, &source.as_ptr(), ::std::ptr::null());
             gl::CompileShader(id);
         }
 
@@ -158,7 +267,7 @@ impl Shader {
                 gl::GetShaderInfoLog(
                     id,
                     len,
-                    std::ptr::null_mut(),
+                    ::std::ptr::null_mut(),
                     error.as_ptr() as *mut gl::types::GLchar
                 );
             }
@@ -187,6 +296,14 @@ impl Drop for Shader {
 }
 
 fn alloc_whitespace_cstring(len: usize) -> CString {
-    let buf: Vec<u8> = vec![b' '; len as usize];
+    let buf: Vec<u8> = vec![b' '; len];
     CString::new(buf).unwrap()
 }
+
+fn alloc_nul_cstring(len: usize) -> CString {
+    let buf: Vec<u8> = vec![0; len];
+    unsafe {
+        CString::from_vec_unchecked(buf)
+    }
+}
+

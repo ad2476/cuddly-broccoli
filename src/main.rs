@@ -10,17 +10,22 @@ pub mod ui;
 pub mod shape;
 
 use failure::err_msg;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 
 const FPS: u64 = 60;
 
 fn run() -> Result<(), failure::Error> {
     let mut view = ui::View::new("App", 900, 700).map_err(err_msg)?;
-    let scene = ui::Scene::new("assets/")?;
+    let mut scene = ui::Scene::new("assets/")?;
 
     'main: loop {
         for event in view.poll_events() {
             match event {
-                sdl2::event::Event::Quit {..} => break 'main,
+                Event::Quit {..} |
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    break 'main
+                },
                 _ => {},
             }
         }
@@ -29,7 +34,8 @@ fn run() -> Result<(), failure::Error> {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        scene.render();
+        scene.tick();
+        scene.render()?;
         view.gl_swap_window();
 
         std::thread::sleep(std::time::Duration::from_nanos(1_000_000_000u64 / FPS));
@@ -38,6 +44,8 @@ fn run() -> Result<(), failure::Error> {
     Ok(())
 }
 
+// Generate backtrace for failure types
+// http://nercury.github.io/rust/opengl/tutorial/2018/02/15/opengl-in-rust-from-scratch-08-failure.html
 fn failure_backtrace(e: failure::Error) -> String {
     use std::fmt::Write;
 
