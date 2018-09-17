@@ -37,7 +37,7 @@ impl Triangle {
             VBOAttribMarker::new(
                 ShaderAttrib::TEXCOORD0,
                 VertexAttrib::FLOAT,
-                3,
+                2,
                 gl::FALSE,
                 ::std::mem::size_of::<glm::Vec3>())
         ];
