@@ -163,7 +163,6 @@ impl Program {
                     name.as_ptr() as *mut gl::types::GLchar
                 );
             }
-            println!("discovered uniform: {}, size: {}", name.to_string_lossy(), array_size);
             self.add_uniform(&name, array_size as usize)?;
         }
         Program::bind_default();
@@ -200,6 +199,7 @@ impl Program {
             });
         }
 
+        println!("discovered uniform: {}", clean_name);
         self.uniforms.insert(clean_name, array);
         Ok(())
     }

@@ -1,8 +1,8 @@
-use gl;
 use std::rc::Rc;
 use render_gl::types::*;
-use render_gl::{self, VBOAttribMarker};
+use render_gl;
 use glm::{self,vec3,vec2};
+use num;
 
 use shape::{Drawable, DrawError};
 
@@ -10,12 +10,13 @@ pub struct Triangle {
     program: Rc<render_gl::Program>,
     _vbo: render_gl::VBO,
     vao: render_gl::VAO,
+    transform: glm::Mat4,
     time: f32,
 }
 
 impl Triangle {
     pub fn new(program: &Rc<render_gl::Program>) -> Triangle {
-        let vertex_data: Vec<render_gl::Vertex> = vec![
+        let vertex_data: Vec<render_gl::VertexUV> = vec![
             (vec3(-0.5, -0.5, 0.0), vec2(0.0, 0.0)).into(),
             (vec3(0.5, -0.5, 0.0), vec2(1.0, 0.0)).into(),
             (vec3(0.0, 0.5, 0.0), vec2(0.5, 1.0)).into()
@@ -24,27 +25,10 @@ impl Triangle {
     }
 
     pub fn from_data(
-        data: Vec<render_gl::Vertex>,
+        data: Vec<render_gl::VertexUV>,
         program: &Rc<render_gl::Program>
     ) -> Triangle {
-        let markers: Vec<VBOAttribMarker> = vec![
-            VBOAttribMarker::new(
-                ShaderAttrib::POSITION, 
-                VertexAttrib::FLOAT,
-                3,
-                gl::FALSE,
-                0),
-            VBOAttribMarker::new(
-                ShaderAttrib::TEXCOORD0,
-                VertexAttrib::FLOAT,
-                2,
-                gl::FALSE,
-                ::std::mem::size_of::<glm::Vec3>())
-        ];
-        let vbo = render_gl::VBO::from_data(
-            &data,
-            markers
-        );
+        let vbo = render_gl::VBO::from_data(&data);
         let vao = render_gl::VAO::new(
             &vbo,
             GlLayout::Triangles
@@ -54,6 +38,7 @@ impl Triangle {
             program: Rc::clone(program),
             _vbo: vbo,
             vao,
+            transform: glm::ext::translate(&num::one(), vec3(-0.5,0.0,0.0)),
             time: 0.
         }
     }
@@ -67,6 +52,7 @@ impl Drawable for Triangle {
     fn draw(&self) -> Result<(), DrawError> {
         self.program.bind();
         self.program.set_uniform("u_time", &self.time)?;
+        self.program.set_uniform("m", &self.transform)?;
 
         self.vao.bind();
         self.vao.draw();

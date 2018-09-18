@@ -3,25 +3,50 @@ use gl;
 use glm;
 use render_gl::types;
 
-/// Representation of a Vertex in the shader. For now, let this be a struct,
-/// but it would be nice to have it as a Trait and expose ways of getting at
-/// vertex attributes
+/// Trait for data that represents a vertex to implement. Defines an
+/// interface for getting attribute markers on the vertex data, so
+/// that OpenGL knows what to pass to the shader.
+pub trait Vertex {
+    fn vertex_attrib_markers() -> Vec<VBOAttribMarker>;
+}
+
+/// Representation of a vertex with position and uv coordinates.
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
-pub struct Vertex {
+pub struct VertexUV {
     pos: glm::Vec3,
     uv: glm::Vec2,
 }
 
-impl Vertex {
-    pub fn new(pos: glm::Vec3, uv: glm::Vec2) -> Vertex {
-        Vertex { pos, uv }
+impl VertexUV {
+    pub fn new(pos: glm::Vec3, uv: glm::Vec2) -> VertexUV {
+        VertexUV { pos, uv }
     }
 }
 
-impl From<(glm::Vec3, glm::Vec2)> for Vertex {
-    fn from(other: (glm::Vec3, glm::Vec2)) -> Vertex {
-        Vertex::new(other.0, other.1)
+impl Vertex for VertexUV {
+    fn vertex_attrib_markers() -> Vec<VBOAttribMarker> {
+        let markers: Vec<VBOAttribMarker> = vec![
+            VBOAttribMarker::new(
+                types::ShaderAttrib::POSITION,
+                types::VertexAttrib::FLOAT,
+                3,
+                gl::FALSE,
+                0),
+            VBOAttribMarker::new(
+                types::ShaderAttrib::TEXCOORD0,
+                types::VertexAttrib::FLOAT,
+                2,
+                gl::FALSE,
+                ::std::mem::size_of::<glm::Vec3>())
+        ];
+        markers
+    }
+}
+
+impl From<(glm::Vec3, glm::Vec2)> for VertexUV {
+    fn from(other: (glm::Vec3, glm::Vec2)) -> VertexUV {
+        VertexUV::new(other.0, other.1)
     }
 }
 
@@ -66,14 +91,12 @@ pub struct VBO {
 }
 
 impl VBO {
-    pub fn from_data(
-        data: &Vec<Vertex>,
-        markers: Vec<VBOAttribMarker>,
-    ) -> VBO
+    pub fn from_data<T: Vertex>(data: &[T]) -> VBO
     {
         let mut id: gl::types::GLuint = 0;
         let buffer_size = data.len();
-        let stride = std::mem::size_of::<Vertex>();
+        let stride = std::mem::size_of::<T>();
+        let markers = T::vertex_attrib_markers();
         unsafe {
             gl::GenBuffers(1, &mut id);
             gl::BindBuffer(gl::ARRAY_BUFFER, id); // bind handle

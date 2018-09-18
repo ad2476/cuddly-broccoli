@@ -54,7 +54,7 @@ impl Scene {
         for shape in &mut shapes {
             shape.init()?;
         }
-        Ok(Scene { shapes, _loader: loader })
+        Ok(Scene { shapes,  _loader: loader })
     }
 
     pub fn tick(&mut self) {

@@ -3,6 +3,7 @@
 extern crate sdl2;
 extern crate gl;
 extern crate glm;
+extern crate num;
 
 pub mod render_gl;
 pub mod resources;
