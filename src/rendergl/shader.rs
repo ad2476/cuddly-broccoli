@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::ffi::{CString, CStr, OsStr};
 use std::path::{Path, PathBuf};
 
-use render_gl::{uniform, UniformSet};
+use rendergl::{uniform, UniformSet};
 use resources::{self, ResourceLoader};
 
 /// Error enum for shaders

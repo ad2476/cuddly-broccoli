@@ -1,44 +1,51 @@
 use std::rc::Rc;
-use render_gl::types::*;
-use render_gl;
+use rendergl::types::*;
+use rendergl;
 use glm::{self,vec3,vec2};
 use num;
 
 use shape::{Drawable, DrawError};
 
 pub struct Triangle {
-    program: Rc<render_gl::Program>,
-    _vbo: render_gl::VBO,
-    vao: render_gl::VAO,
+    program: Rc<rendergl::Program>,
+    _vbo: rendergl::VBO,
+    ibo: rendergl::IBO,
+    vao: rendergl::VAO,
     transform: glm::Mat4,
     time: f32,
 }
 
 impl Triangle {
-    pub fn new(program: &Rc<render_gl::Program>) -> Triangle {
-        let vertex_data: Vec<render_gl::VertexUV> = vec![
+    pub fn new(program: &Rc<rendergl::Program>) -> Triangle {
+        let vertex_data: Vec<rendergl::VertexUV> = vec![
             (vec3(-0.5, -0.5, 0.0), vec2(0.0, 0.0)).into(),
             (vec3(0.5, -0.5, 0.0), vec2(1.0, 0.0)).into(),
-            (vec3(0.0, 0.5, 0.0), vec2(0.5, 1.0)).into()
+            (vec3(0.0, 0.5, 0.0), vec2(0.5, 1.0)).into(),
+            (vec3(0.5, 0.5, 0.0), vec2(1.0, 1.0)).into()
         ];
         Triangle::from_data(vertex_data, program)
     }
 
     pub fn from_data(
-        data: Vec<render_gl::VertexUV>,
-        program: &Rc<render_gl::Program>
+        data: Vec<rendergl::VertexUV>,
+        program: &Rc<rendergl::Program>
     ) -> Triangle {
-        let vbo = render_gl::VBO::from_data(&data);
-        let vao = render_gl::VAO::new(
+        let index_data: Vec<u32> = vec![0, 1, 2, 2, 1, 3];
+
+        let vbo = rendergl::VBO::from_data(&data);
+        let ibo = rendergl::IBO::from_data(&index_data);
+        let vao = rendergl::VAO::new(
             &vbo,
+            Some(&ibo),
             GlLayout::Triangles
         );
 
         Triangle {
             program: Rc::clone(program),
             _vbo: vbo,
+            ibo,
             vao,
-            transform: glm::ext::translate(&num::one(), vec3(-0.5,0.0,0.0)),
+            transform: glm::ext::rotate(&num::one(), -glm::ext::consts::half_pi::<f32,f32>(),vec3(0.0,0.0,1.0)),
             time: 0.
         }
     }
@@ -55,7 +62,9 @@ impl Drawable for Triangle {
         self.program.set_uniform("m", &self.transform)?;
 
         self.vao.bind();
+        self.ibo.bind();
         self.vao.draw();
+        self.ibo.unbind();
         self.vao.unbind();
 
         Ok(())

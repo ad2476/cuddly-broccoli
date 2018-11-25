@@ -1,4 +1,4 @@
-use render_gl::uniform;
+use rendergl::uniform;
 mod triangle;
 
 pub use self::triangle::Triangle;

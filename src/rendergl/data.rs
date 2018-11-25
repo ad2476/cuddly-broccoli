@@ -1,7 +1,7 @@
 use std;
 use gl;
 use glm;
-use render_gl::types;
+use rendergl::types;
 
 /// Trait for data that represents a vertex to implement. Defines an
 /// interface for getting attribute markers on the vertex data, so
@@ -144,33 +144,96 @@ impl Drop for VBO {
     }
 }
 
-/// Vertex Attribute Object.
+/// Index Buffer Object.
+///
+/// Defines a permutation of indices over an associated VBO, and can be used
+/// for indexed drawing.
+pub struct IBO {
+    id: gl::types::GLuint,
+    buffer_size: usize,
+}
+
+impl IBO {
+    pub fn from_data(data: &[u32]) -> IBO {
+        let mut id: gl::types::GLuint = 0;
+        let buffer_size = data.len();
+        let stride = std::mem::size_of::<u32>();
+        unsafe {
+            gl::GenBuffers(1, &mut id);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, id); // bind handle
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                (buffer_size * stride) as gl::types::GLsizeiptr, // size in bytes
+                data.as_ptr() as *const gl::types::GLvoid,
+                gl::STATIC_DRAW
+            );
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); // unbind
+        }
+        IBO { id, buffer_size }
+    }
+
+    pub fn bind(&self) {
+        unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id); }
+    }
+
+    pub fn unbind(&self) {
+        unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); }
+    }
+}
+
+impl Drop for IBO {
+    fn drop(&mut self) {
+        unsafe { gl::DeleteBuffers(1, &self.id); }
+    }
+}
+
+/// Enumerate draw methods for VAOs
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+enum DrawMethod {
+    ARRAYS,
+    INDEXED,
+}
+
+/// Vertex Array Object.
 ///
 /// Associates attributes with a VBO and is responsible
 /// for drawing the vertex buffer.
 pub struct VAO {
     id: gl::types::GLuint,
-    num_vertices: gl::types::GLsizei,
+    num_vertices: gl::types::GLsizei, // number of vertices to render
     layout: types::GlLayout,
+    draw_method: DrawMethod,
 }
 
 impl VAO {
     pub fn new(
         vbo: &VBO,
+        ibo: Option<&IBO>,
         layout: types::GlLayout
     ) -> VAO
     {
         let mut id: gl::types::GLuint = 0;
-        let num_vertices = vbo.buffer_size as gl::types::GLsizei;
+        // number of vertices to render is either the vertices in the VBO, or the indices
+        //  in the IBO
+        let num_vertices = ibo
+            .map_or(vbo.buffer_size, |i| i.buffer_size) as gl::types::GLsizei;
         unsafe {
             gl::GenVertexArrays(1, &mut id);
             gl::BindVertexArray(id);
         }
         vbo.bind();
+        let draw_method = match ibo {
+            Some(i) => {
+                i.bind(); // associate IBO with this VAO
+                DrawMethod::INDEXED
+            },
+            None => DrawMethod::ARRAYS,
+        };
         vbo.enable();
         vbo.unbind();
+        ibo.map_or((), |i| i.unbind());
         unsafe { gl::BindVertexArray(0); }
-        VAO { id, num_vertices, layout }
+        VAO { id, num_vertices, layout, draw_method }
     }
 
     pub fn bind(&self) {
@@ -178,8 +241,16 @@ impl VAO {
     }
 
     pub fn draw(&self) {
-        unsafe {
-            gl::DrawArrays(self.layout.into(), 0, self.num_vertices);
+        match self.draw_method {
+            DrawMethod::ARRAYS => unsafe {
+                gl::DrawArrays(self.layout.into(), 0, self.num_vertices);
+            },
+            DrawMethod::INDEXED => unsafe {
+                gl::DrawElements(self.layout.into(),
+                                 self.num_vertices,
+                                 gl::UNSIGNED_INT,
+                                 0 as *const gl::types::GLvoid);
+            },
         }
     }
 

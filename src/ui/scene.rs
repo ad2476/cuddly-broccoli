@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use render_gl;
+use rendergl;
 use resources::{self, ResourceLoader};
 use shape::{self,Drawable};
 
@@ -10,13 +10,13 @@ pub enum Error {
     #[fail(display = "Failed to initialise ResourceLoader for {}", name)]
     ResourceLoadError { name: String, #[cause] inner: resources::Error },
     #[fail(display = "Failed to create shader")]
-    ShaderError { #[cause] inner: render_gl::shader::Error },
+    ShaderError { #[cause] inner: rendergl::shader::Error },
     #[fail(display = "Error during rendering")]
     RenderError { #[cause] inner: shape::DrawError},
 }
 
-impl From<render_gl::shader::Error> for Error {
-    fn from(other: render_gl::shader::Error) -> Self {
+impl From<rendergl::shader::Error> for Error {
+    fn from(other: rendergl::shader::Error) -> Self {
         Error::ShaderError { inner: other }
     }
 }
@@ -44,7 +44,7 @@ impl Scene {
         println!("{}", loader);
 
         let shader_program = Rc::new(
-            render_gl::Program::from_res(&loader, "shaders/triangle")?
+            rendergl::Program::from_res(&loader, "shaders/triangle")?
         );
 
         let triangle1 = shape::Triangle::new(&shader_program);
@@ -68,7 +68,7 @@ impl Scene {
         for shape in &self.shapes {
             shape.draw()?;
         }
-        render_gl::Program::bind_default();
+        rendergl::Program::bind_default();
         Ok(())
     }
 }

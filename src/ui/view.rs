@@ -31,6 +31,7 @@ impl View {
         unsafe {
             gl::Viewport(0, 0, 900, 700);
             gl::ClearColor(0.6, 0.6, 0.6, 1.0);
+            gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
         }
 
         let event_pump = sdl.event_pump()?;

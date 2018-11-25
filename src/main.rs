@@ -5,7 +5,7 @@ extern crate gl;
 extern crate glm;
 extern crate num;
 
-pub mod render_gl;
+pub mod rendergl;
 pub mod resources;
 pub mod ui;
 pub mod shape;
