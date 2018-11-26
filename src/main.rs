@@ -9,16 +9,21 @@ pub mod rendergl;
 pub mod resources;
 pub mod ui;
 pub mod shape;
+pub mod camera;
 
 use failure::err_msg;
-use sdl2::event::Event;
+use sdl2::event::{WindowEvent, Event};
 use sdl2::keyboard::Keycode;
 
 const FPS: u64 = 60;
 
+const SCREEN_WIDTH: u32 = 900;
+const SCREEN_HEIGHT: u32 = 700;
+
 fn run() -> Result<(), failure::Error> {
-    let mut view = ui::View::new("App", 900, 700).map_err(err_msg)?;
+    let mut view = ui::View::new("App", SCREEN_WIDTH, SCREEN_HEIGHT).map_err(err_msg)?;
     let mut scene = ui::Scene::new("assets/")?;
+    scene.on_resize(SCREEN_WIDTH as i32, SCREEN_HEIGHT as i32)?;
 
     'main: loop {
         for event in view.poll_events() {
@@ -27,12 +32,18 @@ fn run() -> Result<(), failure::Error> {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'main
                 },
+                Event::Window { win_event: WindowEvent::Resized(x,y), .. } => {
+                    scene.on_resize(x, y)?;
+                },
+                Event::KeyDown { keycode: Some(key), .. } => {
+                    scene.on_keydown(&key)?;
+                }
                 _ => {},
             }
         }
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
         scene.tick();

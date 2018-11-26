@@ -18,10 +18,10 @@ pub struct Triangle {
 impl Triangle {
     pub fn new(program: &Rc<rendergl::Program>) -> Triangle {
         let vertex_data: Vec<rendergl::VertexUV> = vec![
-            (vec3(-0.5, -0.5, 0.0), vec2(0.0, 0.0)).into(),
-            (vec3(0.5, -0.5, 0.0), vec2(1.0, 0.0)).into(),
-            (vec3(0.0, 0.5, 0.0), vec2(0.5, 1.0)).into(),
-            (vec3(0.5, 0.5, 0.0), vec2(1.0, 1.0)).into()
+            (vec3(-0.5, -0.5, 0.5), vec2(0.0, 0.0)).into(),
+            (vec3(0.5, -0.5, 0.5), vec2(1.0, 0.0)).into(),
+            (vec3(-0.5, 0.5, 0.5), vec2(0.0, 1.0)).into(),
+            (vec3(0.5, 0.5, 0.5), vec2(1.0, 1.0)).into()
         ];
         Triangle::from_data(vertex_data, program)
     }
@@ -45,7 +45,8 @@ impl Triangle {
             _vbo: vbo,
             ibo,
             vao,
-            transform: glm::ext::rotate(&num::one(), -glm::ext::consts::half_pi::<f32,f32>(),vec3(0.0,0.0,1.0)),
+            //transform: glm::ext::rotate(&num::one(), -glm::ext::consts::half_pi::<f32,f32>(),vec3(0.0,0.0,1.0)),
+            transform: glm::ext::scale(&num::one(), glm::vec3(2.0, 2.0, 1.0)),
             time: 0.
         }
     }
