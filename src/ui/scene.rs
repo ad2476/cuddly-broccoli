@@ -64,11 +64,12 @@ impl Scene {
             .build();
 
         let triangle = shape::Triangle::new(&animation_program);
-        let sphere = shape::Sphere::new(&lighting_program, 10, 16);
+        let sphere = shape::Sphere::new(&lighting_program, 100, 100);
+        let cylinder = shape::Cylinder::new(&lighting_program, 3, 10);
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
-        shapes.push(Box::new(sphere));
-        shapes.push(Box::new(triangle));
+        shapes.push(Box::new(cylinder));
+//        shapes.push(Box::new(triangle));
         for shape in &mut shapes {
             shape.init()?;
         }
@@ -120,6 +121,12 @@ impl Scene {
             }
             _ => {},
         }
+        Ok(())
+    }
+
+    pub fn on_scroll(&mut self, delta: i32) -> Result<(), Error> {
+        let dir = if delta > 0 { 1.0 } else { -1.0 };
+        self.camera.zoom(dir*0.05);
         Ok(())
     }
 }

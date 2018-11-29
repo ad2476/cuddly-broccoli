@@ -44,7 +44,6 @@ impl Sphere {
         let nvert = vert_data.len() as u32;
 
         // generate indices
-        // FIXME: this is incorrect
         for slice in 0..lon_slices {
             let istart = slice * (lat_strips + 1);
             index_data.push(istart);

@@ -37,7 +37,14 @@ fn run() -> Result<(), failure::Error> {
                 },
                 Event::KeyDown { keycode: Some(key), .. } => {
                     scene.on_keydown(&key)?;
-                }
+                },
+                Event::MouseWheel { y, direction, .. } => {
+                    let dir = match direction {
+                        sdl2::mouse::MouseWheelDirection::Flipped => -1,
+                        _ => 1,
+                    };
+                    scene.on_scroll(y*dir)?;
+                },
                 _ => {},
             }
         }

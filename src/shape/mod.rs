@@ -1,9 +1,11 @@
 use rendergl::uniform;
 mod triangle;
 mod sphere;
+mod cylinder;
 
 pub use self::triangle::Triangle;
 pub use self::sphere::Sphere;
+pub use self::cylinder::Cylinder;
 
 #[derive(Debug, Fail)]
 pub enum DrawError {

@@ -77,8 +77,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(params: CameraBuilder) -> Camera {
-        let up = glm::normalize(params.up);
-        let view = glm::ext::look_at(params.eye, params.look, up);
+        let view = Camera::create_view(&params);
         let perspective = Camera::create_perspective(&params);
 
         Camera { perspective, view, params }
@@ -88,8 +87,22 @@ impl Camera {
         glm::ext::perspective(params.fov, params.ratio, params.near,params.far)
     }
 
+    fn create_view(params: &CameraBuilder) -> glm::Mat4 {
+        glm::ext::look_at(params.eye, params.look, glm::normalize(params.up))
+    }
+
     pub fn set_aspect(&mut self, ratio: f32) {
         self.params.ratio = ratio;
         self.perspective = Camera::create_perspective(&self.params);
+    }
+
+    pub fn translate(&mut self, v: glm::Vec3) {
+        self.params.eye = self.params.eye + v;
+        self.view = Camera::create_view(&self.params);
+    }
+
+    pub fn zoom(&mut self, delta: f32) {
+        let v = self.params.look*delta;
+        self.translate(v);
     }
 }
