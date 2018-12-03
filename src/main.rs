@@ -10,6 +10,8 @@ pub mod resources;
 pub mod ui;
 pub mod shape;
 pub mod camera;
+pub mod util;
+pub mod mesh;
 
 use failure::err_msg;
 use sdl2::event::{WindowEvent, Event};

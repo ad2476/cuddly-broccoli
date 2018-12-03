@@ -7,6 +7,7 @@ use glm::vec3;
 use rendergl;
 use resources::{self, ResourceLoader};
 use shape::{self,Drawable};
+use mesh;
 
 use camera::*;
 
@@ -30,6 +31,20 @@ impl From<shape::DrawError> for Error {
     fn from(other: shape::DrawError) -> Self {
         Error::RenderError { inner: other }
     }
+}
+
+fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
+    let mut depth_data = Vec::new();
+    let w = 20;
+    let h = 20;
+    for i in 0..h {
+        for j in 0..w {
+            let x = (i as f32) / (h as f32) - 0.5;
+            let y = (j as f32) / (w as f32) - 0.5;
+            depth_data.push(1.0 - (x*x + y*y) - 0.5);
+        }
+    }
+    mesh::DepthMesh::new(&depth_data, h, w).build_shape(&program)
 }
 
 /// Scene implementation.
@@ -64,12 +79,14 @@ impl Scene {
             .build();
 
         let triangle = shape::Triangle::new(&animation_program);
-        let sphere = shape::Sphere::new(&lighting_program, 100, 100);
-        let cylinder = shape::Cylinder::new(&lighting_program, 3, 10);
+        let sphere = shape::Sphere::new(&lighting_program, 50, 50);
+        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
+        let mesh = make_mesh(&lighting_program);
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
-        shapes.push(Box::new(cylinder));
+        shapes.push(Box::new(sphere));
 //        shapes.push(Box::new(triangle));
+        shapes.push(Box::new(mesh));
         for shape in &mut shapes {
             shape.init()?;
         }
