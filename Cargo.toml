@@ -9,6 +9,7 @@ gl = "0.10.0"
 failure = "0.1"
 glm = "0.2.3"
 num = "^0.1.36"
+image = "*"
 
 [build-dependencies]
 walkdir = "2.1"

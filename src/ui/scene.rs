@@ -117,6 +117,7 @@ impl Scene {
 
     pub fn on_resize(&mut self, x: i32, y: i32) -> Result<(), Error> {
         self.camera.set_aspect((x as f32)/(y as f32));
+        unsafe { gl::Viewport(0, 0, x, y); }
         Ok(())
     }
 

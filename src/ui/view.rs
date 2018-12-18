@@ -29,7 +29,7 @@ impl View {
         let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
         unsafe {
-            gl::Viewport(0, 0, 900, 700);
+            gl::Viewport(0, 0, width as i32, height as i32);
             gl::ClearColor(0.6, 0.6, 0.6, 1.0);
             gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 

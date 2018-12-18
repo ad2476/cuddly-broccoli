@@ -25,6 +25,12 @@ impl UniformSet for i32 {
     }
 }
 
+impl UniformSet for u32 {
+    fn set_uniform_gl(&self, loc: gl::types::GLint) {
+        unsafe { gl::Uniform1ui(loc, *self); }
+    }
+}
+
 impl UniformSet for f32 {
     fn set_uniform_gl(&self, loc: gl::types::GLint) {
         unsafe { gl::Uniform1f(loc, *self); }

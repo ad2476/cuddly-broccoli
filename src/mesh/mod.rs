@@ -11,12 +11,18 @@ pub struct MeshObject {
     program: Rc<Program>,
     shapegl: ShapeGL,
     transform: glm::Mat4,
+    time: u32,
 }
 
 impl Drawable for MeshObject {
+    fn tick(&mut self) {
+        self.time += 1;
+    }
+
     fn draw(&self) -> Result<(), DrawError> {
         self.program.bind();
         self.program.set_uniform("model", &self.transform)?;
+        self.program.set_uniform("u_time", &self.time)?;
         self.shapegl.draw_vertices();
         Ok(())
     }
@@ -56,7 +62,8 @@ impl DepthMesh {
         MeshObject {
             program: Rc::clone(program),
             shapegl,
-            transform: glm::ext::scale(&num::one(), self.size)
+            transform: glm::ext::scale(&num::one(), self.size),
+            time: 0
         }
     }
 
