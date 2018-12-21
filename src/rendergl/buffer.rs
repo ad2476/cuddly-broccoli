@@ -48,7 +48,7 @@ impl VBO {
                     m.name.into(),
                     m.elements_per_vertex,
                     m.data_type.into(),
-                    m.normalise,
+                    m.normalize,
                     self.stride,
                     m.offset as *const gl::types::GLvoid
                 );

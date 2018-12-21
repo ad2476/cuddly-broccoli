@@ -49,9 +49,10 @@ fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
 
 /// Scene implementation.
 ///
-/// A scene contains a list of `Drawable` objects to render.
-/// The scene will eventually also need to contain things such as
-/// cameras, lights, and more.
+/// A scene contains a list of `Drawable` objects and a program to render them with.
+/// Currently, the camera is also part of the scene.
+///
+/// The scene will eventually also need to contain things such as lights and a scenegraph.
 pub struct Scene {
     shapes: Vec<Box<Drawable>>,
     camera: Camera,

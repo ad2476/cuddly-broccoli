@@ -1,3 +1,23 @@
+//! Shapes and buffer data wrappers
+//!
+//! The `shape` module exposes a `Drawable` Trait, defines a wrapper for OpenGL buffer data
+//! representing a shape, and implements a few `Drawable` shapes (Cylinder, Sphere).
+//!
+//! # Examples
+//!
+//! Generate buffer data for a cylinder with 10 radial slices and 3 vertical strips. Draw
+//! the shape.
+//! ```rust
+//! let cylinder_data = ShapeGL::cylinder(3, 10);
+//! cylinder_data.draw_vertices();
+//! ```
+//!
+//! Construct a unit `Sphere` and draw it:
+//! ```rust,ignore
+//! let shader: rendergl::Program; // load a shader
+//! let sphere = Sphere::new(&shader, 50, 50);
+//! ```
+
 use glm::ext::consts;
 use glm::{self, vec3, vec2};
 use rendergl::{self,uniform};
@@ -32,6 +52,10 @@ pub trait Drawable {
     fn draw(&self) -> Result<(), DrawError>;
 }
 
+/// Owner of OpenGL handles for VBO, IBO, VAO.
+///
+/// Associates given vertex data with a permutation of indices defining drawing order,
+/// constructs an internal VAO handle, and exposes a method for drawing its data.
 pub struct ShapeGL {
     _vbo: rendergl::VBO,
     ibo: rendergl::IBO,
@@ -39,6 +63,30 @@ pub struct ShapeGL {
 }
 
 impl ShapeGL {
+    /// Construct a new `ShapeGL` given vertex data, indices and triangle layout
+    ///
+    /// # Example
+    ///
+    /// Construct a quad with vertices representing 3D position and UV texture-mapping coordinates
+    /// ```rust
+    /// # use rendergl::VertexUV;
+    /// # use rendergl::types::GlLayout;
+    /// // Define the vertices
+    /// let vertex_data: Vec<VertexUV> = vec![
+    ///     (vec3(-0.5, -0.5, 0.5), vec2(0.0, 0.0)).into(),
+    ///     (vec3(0.5, -0.5, 0.5), vec2(1.0, 0.0)).into(),
+    ///     (vec3(-0.5, 0.5, 0.5), vec2(0.0, 1.0)).into(),
+    ///     (vec3(0.5, 0.5, 0.5), vec2(1.0, 1.0)).into()
+    /// ];
+    ///
+    /// // Specify a winding order over the vertices:
+    /// let index_data: Vec<u32> = vec![0, 1, 2, 2, 1, 3];
+    ///
+    /// // Use GL_TRIANGLES
+    /// let layout: GlLayout = GlLayout::Triangles;
+    ///
+    /// let shape = ShapeGL::new(&vertex_data, &index_data, layout);
+    /// ```
     pub fn new<T: rendergl::Vertex>(
         vertex_data: &[T],
         indices: &[u32],
@@ -54,6 +102,7 @@ impl ShapeGL {
         ShapeGL { _vbo: vbo, ibo, vao }
     }
 
+    /// Draw vertex data using internal VAO and IBO.
     pub fn draw_vertices(&self) {
         self.vao.bind();
         self.ibo.bind();
@@ -64,10 +113,12 @@ impl ShapeGL {
 }
 
 impl ShapeGL {
-    /// Generate vertices for a unit sphere.
+    /// Generate vertices for a unit sphere (unit diameter).
     ///
-    /// `lat_strips`: number of subdivisions in latitude (vertical lod)
-    /// `lon_strips`: number of subdivisions in longitude (horizontal lod)
+    /// # Arguments
+    ///
+    /// * `lat_strips`: number of subdivisions in latitude (vertical lod)
+    /// * `lon_strips`: number of subdivisions in longitude (horizontal lod)
     pub fn sphere(lat_strips: u32, lon_slices: u32) -> ShapeGL {
         let mut vert_data: Vec<rendergl::VertexN> = Vec::new();
         let mut index_data: Vec<u32> = Vec::new();
@@ -124,6 +175,12 @@ impl ShapeGL {
 }
 
 impl ShapeGL {
+    /// Generate vertices for a unit cylinder (unit diameter, unit height).
+    ///
+    /// # Arguments
+    ///
+    /// * `strips`: number of vertical subdivisions
+    /// * `slices`: number of radial subdivisions
     pub fn cylinder(strips: u32, slices: u32) -> ShapeGL {
         let mut vert_data: Vec<rendergl::VertexN> = Vec::new();
         let mut index_data: Vec<u32> = Vec::new();

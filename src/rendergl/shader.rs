@@ -1,3 +1,18 @@
+//! Safe wrappers for compiling and linking GLSL shader programs.
+//!
+//! Uses the `ResourceLoader` system to load shader sources from file.
+//!
+//! # Examples
+//!
+//! Load vertex and fragment shaders `assets/shader.vert`, `assets/shader.frag`.
+//! ```
+//! # use std::path::Path;
+//! # use resources::ResourceLoader;
+//! let loader: ResourceLoader = ResourceLoader::new(Path::new("assets/")).unwrap();
+//!
+//! let program = Program::from_res(&loader, "shader").unwrap();
+//! ```
+
 use gl;
 use std::collections::HashMap;
 use std::ffi::{CString, CStr, OsStr};
@@ -36,9 +51,10 @@ pub struct Program {
 impl Program {
     /// Construct a shader program from resource.
     ///
-    /// Here, `name` assumes there exist vertex and fragment shaders
-    /// within the resource system `name.vert` and `name.frag`. `name`
-    /// should be a relative path from the resource root.
+    /// Here, `name` assumes there exist vertex and fragment shaders within the resource system
+    /// called `name.vert` and `name.frag`.
+    ///
+    /// `name` should be a relative path from the resource root.
     pub fn from_res(
         res: &ResourceLoader,
         name: &str

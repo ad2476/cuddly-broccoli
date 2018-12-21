@@ -1,3 +1,5 @@
+//! 3D mesh implementation.
+
 use std::rc::Rc;
 use std::cmp::{min,max};
 use glm;
@@ -7,6 +9,7 @@ use rendergl::{Program, VertexN, types};
 use shape::{ShapeGL, Drawable, DrawError};
 
 // TODO: will need to refactor into a generic shape object thingy
+/// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
     program: Rc<Program>,
     shapegl: ShapeGL,
@@ -28,6 +31,7 @@ impl Drawable for MeshObject {
     }
 }
 
+/// 3D point data for a mesh. Consumes itself to construct a `MeshObject`.
 pub struct DepthMesh {
     mesh_data: Vec<glm::Vec3>,
     size: glm::Vec3,
@@ -36,6 +40,8 @@ pub struct DepthMesh {
 }
 
 impl DepthMesh {
+
+    /// Create a new `DepthMesh` given a 2D grid of depth samples.
     pub fn new(depth_map: &[f32], num_rows: usize, num_cols: usize) -> DepthMesh {
         let mut mesh_data: Vec<glm::Vec3> = Vec::with_capacity(num_rows*num_cols);
 
@@ -57,6 +63,8 @@ impl DepthMesh {
         }
     }
 
+    /// Constructs vertex data out of this `DepthMesh`'s 3D point cloud and returns a `MeshObject`
+    /// for rendering with OpenGL.
     pub fn build_shape(&self, program: &Rc<Program>) -> MeshObject {
         let shapegl = self.init_buffers();
         MeshObject {

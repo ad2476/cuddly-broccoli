@@ -5,6 +5,7 @@ use glm;
 
 use shape::{Drawable, DrawError, ShapeGL};
 
+/// A `Drawable` sphere.
 pub struct Sphere {
     program: Rc<rendergl::Program>,
     shapegl: ShapeGL,

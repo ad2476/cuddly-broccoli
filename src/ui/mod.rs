@@ -1,3 +1,5 @@
+//! Window initialisation, event handling, rendering, etc.
+
 mod view;
 mod scene;
 

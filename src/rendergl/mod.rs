@@ -1,3 +1,7 @@
+//! Low-level data structures for working with OpenGL objects.
+//!
+//! Exposes safe abstractions on top of OpenGL API calls.
+
 pub mod shader;
 pub mod uniform;
 mod data;

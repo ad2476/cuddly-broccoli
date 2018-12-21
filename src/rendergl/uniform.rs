@@ -1,3 +1,5 @@
+//! Traits and error types for GLSL uniforms.
+
 use gl;
 use glm;
 

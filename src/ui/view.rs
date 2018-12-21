@@ -2,6 +2,7 @@ use sdl2;
 use gl;
 use std;
 
+/// Owns handles to SDL and GL contexts. Processes events and renders OpenGL scene.
 pub struct View {
     _sdl_ctx: sdl2::Sdl,
     _gl_ctx: sdl2::video::GLContext,
@@ -10,6 +11,11 @@ pub struct View {
 }
 
 impl View {
+
+    /// Create a new `View`. Initialises SDL, window context, GL context.
+    ///
+    /// Sets up the OpenGL viewport, background colour. Enables depth testing, back-face culling,
+    /// and specifies counter-clockwise triangle winding order.
     pub fn new(window_title: &str, width: u32, height: u32) -> Result<View, String> {
         let sdl = sdl2::init()?;
         let video_subsystem = sdl.video()?;

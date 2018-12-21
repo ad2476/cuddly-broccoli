@@ -1,3 +1,4 @@
+//! Utility functions.
 
 pub fn linear_index(row: usize, col: usize, num_cols: usize) -> usize {
     row*num_cols + col

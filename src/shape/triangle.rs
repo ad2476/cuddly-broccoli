@@ -6,6 +6,7 @@ use num;
 
 use shape::{Drawable, DrawError};
 
+/// A `Drawable` quad (misnamed: not a triangle)
 pub struct Triangle {
     program: Rc<rendergl::Program>,
     _vbo: rendergl::VBO,
@@ -45,7 +46,6 @@ impl Triangle {
             _vbo: vbo,
             ibo,
             vao,
-            //transform: glm::ext::rotate(&num::one(), -glm::ext::consts::half_pi::<f32,f32>(),vec3(0.0,0.0,1.0)),
             transform: glm::ext::scale(&num::one(), glm::vec3(2.0, 2.0, 1.0)),
             time: 0.
         }

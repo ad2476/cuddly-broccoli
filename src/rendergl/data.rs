@@ -2,10 +2,15 @@ use gl;
 use glm;
 use rendergl::types;
 
-/// Trait for data that represents a vertex to implement. Defines an
-/// interface for getting attribute markers on the vertex data, so
-/// that OpenGL knows what to pass to the shader.
+/// Defines an interface for generic vertex data representations.
+///
+/// See the implementations of `VertexUV` or `VertexN` for working examples
+/// of structs that implement this trait.
 pub trait Vertex {
+    /// Query attributes for each vertex component.
+    ///
+    /// Returns a list of attribute markers that determine how OpenGL
+    /// should interpret the raw buffer data passed to the shader.
     fn vertex_attrib_markers() -> Vec<VBOAttribMarker>;
 }
 
@@ -84,12 +89,13 @@ impl From<(glm::Vec3, glm::Vec3)> for VertexN {
 }
 
 /// Mark a specific VBO attribute (such as position, color, etc)
-/// for passing to `glVertexAttribPointer`.
+/// for passing to
+/// [`glVertexAttribPointer`](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml).
 pub struct VBOAttribMarker {
     pub name: types::ShaderAttrib, // attribute location
     pub data_type: types::VertexAttrib, // primitive type in VBO
     pub elements_per_vertex: gl::types::GLint,
-    pub normalise: gl::types::GLboolean, // normalise data
+    pub normalize: gl::types::GLboolean, // normalise data
     pub offset: usize, // offset in bytes from start of array to first element
 }
 
@@ -98,7 +104,7 @@ impl VBOAttribMarker {
         name: types::ShaderAttrib,
         data_type: types::VertexAttrib,
         elements_per_vertex: gl::types::GLint,
-        normalise: gl::types::GLboolean,
+        normalize: gl::types::GLboolean,
         offset: usize
     ) -> VBOAttribMarker
     {
@@ -106,7 +112,7 @@ impl VBOAttribMarker {
             name,
             data_type,
             elements_per_vertex,
-            normalise,
+            normalize,
             offset
         }
     }

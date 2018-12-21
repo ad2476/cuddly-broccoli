@@ -1,6 +1,10 @@
+//! Enumerate GL constants for better typing.
+
 use gl;
 
-/// Enumerate possible Glenum variants for representing triangle layouts.
+/// Enumerate possible `Glenum` variants for representing triangle layouts.
+///
+/// Refer to: [OpenGL docs](https://www.khronos.org/opengl/wiki/Primitive#Triangle_primitives)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(u32)]
 pub enum GlLayout {
@@ -16,6 +20,28 @@ impl From<GlLayout> for gl::types::GLenum {
 }
 
 /// Enumerate shader locations.
+///
+/// When writing vertex shaders, layout must match. For example:
+///
+/// ```c,ignore
+/// layout(location = 0) in vec3 position;
+/// layout(location = 5) in vec2 texcoord0;
+/// ```
+///
+/// # Attrib locations
+///
+/// | Name | Location |
+/// | ---- | :------: |
+/// | `POSITION`  | 0 |
+/// | `NORMAL`    | 1 |
+/// | `COLOR`     | 2 |
+/// | `TANGENT`   | 3 |
+/// | `BINORMAL`  | 4 |
+/// | `TEXCOORD0` | 5 |
+/// | `TEXCOORD1` | 6 |
+/// | `TEXCOORD2` | 7 |
+/// | `TEXCOORD3` | 8 |
+/// | `SPECIAL0`  | 9 |
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(C)]
 pub enum ShaderAttrib {
@@ -36,7 +62,8 @@ impl From<ShaderAttrib> for gl::types::GLuint {
     }
 }
 
-/// Enumerate accepted types for `glVertexAttribPointer`.
+/// Enumerate accepted types for
+/// [`glVertexAttribPointer`](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml).
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(u32)]
 pub enum VertexAttrib {

@@ -1,5 +1,12 @@
+//! Camera implementation(s).
+//!
+//! The current camera implementation is a perspective camera. It supports a few basic
+//! operations. To render with a `Camera`, make sure to pass its perspective and view matrices to
+//! a shader which understands how to apply the homographic transform.
+
 use glm;
 
+/// Builder pattern for constructing a `Camera` out of parameters.
 pub struct CameraBuilder {
     eye: glm::Vec3,
     look: glm::Vec3,
@@ -69,6 +76,7 @@ impl CameraBuilder {
     }
 }
 
+/// Perspective camera implementation.
 pub struct Camera {
     pub perspective: glm::Mat4,
     pub view: glm::Mat4,
@@ -76,6 +84,8 @@ pub struct Camera {
 }
 
 impl Camera {
+
+    /// Construct a new `Camera` by consuming a `CameraBuilder` instance.
     pub fn new(params: CameraBuilder) -> Camera {
         let view = Camera::create_view(&params);
         let perspective = Camera::create_perspective(&params);
@@ -91,16 +101,21 @@ impl Camera {
         glm::ext::look_at(params.eye, params.look, glm::normalize(params.up))
     }
 
+    /// Set a new aspect ratio. This will rebuild the camera's perspective transform.
     pub fn set_aspect(&mut self, ratio: f32) {
         self.params.ratio = ratio;
         self.perspective = Camera::create_perspective(&self.params);
     }
 
+    /// Translate the camera along the given vector in world space. This will rebuild the camera's
+    /// view transform.
     pub fn translate(&mut self, v: glm::Vec3) {
         self.params.eye = self.params.eye + v;
         self.view = Camera::create_view(&self.params);
     }
 
+    /// Zoom by translating along the camera's `look` vector. This will rebuild the camera's view
+    /// transform.
     pub fn zoom(&mut self, delta: f32) {
         let v = self.params.look*delta;
         self.translate(v);

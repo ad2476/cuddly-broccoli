@@ -1,9 +1,14 @@
+//! Resource loading system.
+//!
+//! Use `ResourceLoader` for loading files from a resource root path.
+
 use std;
 use std::fs;
 use std::ffi::{CString, NulError};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
+/// Error types for resource loading.
 #[derive(Debug, Fail)]
 pub enum Error {
     #[fail(display = "I/O Error")]
@@ -24,12 +29,15 @@ impl From<NulError> for Error {
     }
 }
 
+/// Safely loads data from a resource path root.
 pub struct ResourceLoader {
     path_root: PathBuf,
 }
 
 impl ResourceLoader {
     /// Construct a ResourceLoader from a relative path to assets directory.
+    ///
+    /// # Example
     ///
     /// ```
     /// let res = ResourceLoader("assets/");

@@ -5,6 +5,7 @@ use num;
 
 use shape::{Drawable, DrawError, ShapeGL};
 
+/// A `Drawable` cylinder.
 pub struct Cylinder {
     program: Rc<rendergl::Program>,
     shapegl: ShapeGL,
