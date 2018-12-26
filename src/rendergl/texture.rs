@@ -114,7 +114,6 @@ impl TextureParameters {
 /// Texture object.
 ///
 /// Wrapper type for OpenGL textures.
-#[derive(Clone)]
 pub enum Texture {
     Texture2D(gl::types::GLuint),
     // TODO: enumerate more texture targets
