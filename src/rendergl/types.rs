@@ -2,7 +2,60 @@
 
 use gl;
 
-/// Enumerate possible `Glenum` variants for representing triangle layouts.
+/// Enumerate possible `GLenum` variants for texture parameter names.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[repr(u32)]
+pub enum TextureParam {
+    DepthStencilMode = gl::DEPTH_STENCIL_TEXTURE_MODE,
+    BaseLevel = gl::TEXTURE_BASE_LEVEL,
+    CompareFunction = gl::TEXTURE_COMPARE_FUNC,
+    CompareMode = gl::TEXTURE_COMPARE_MODE,
+    LodBias = gl::TEXTURE_LOD_BIAS,
+    MinFilter = gl::TEXTURE_MIN_FILTER,
+    MagFilter = gl::TEXTURE_MAG_FILTER,
+    MinLod = gl::TEXTURE_MIN_LOD,
+    MaxLod = gl::TEXTURE_MAX_LOD,
+    MaxLevel = gl::TEXTURE_MAX_LEVEL,
+    SwizzleR = gl::TEXTURE_SWIZZLE_R,
+    SwizzleG = gl::TEXTURE_SWIZZLE_G,
+    SwizzleB = gl::TEXTURE_SWIZZLE_B,
+    SwizzleA = gl::TEXTURE_SWIZZLE_A,
+    WrapS = gl::TEXTURE_WRAP_S,
+    WrapT = gl::TEXTURE_WRAP_T,
+    WrapR = gl::TEXTURE_WRAP_R,
+
+    // For the vector commands glTexParameter*v, pname can be one of:
+    BorderColor = gl::TEXTURE_BORDER_COLOR,
+    SwizzleRGBA = gl::TEXTURE_SWIZZLE_RGBA,
+}
+impl From<TextureParam> for gl::types::GLenum {
+    fn from(item: TextureParam) -> gl::types::GLenum {
+        item as gl::types::GLenum
+    }
+}
+
+/// Enumerate possible `GLenum` variants for representing texture targets.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[repr(u32)]
+pub enum TextureTarget {
+    Tex1D = gl::TEXTURE_1D,
+    Tex1DArray= gl::TEXTURE_1D_ARRAY,
+    Tex2D = gl::TEXTURE_2D,
+    Tex2DArray = gl::TEXTURE_2D_ARRAY,
+    Tex2DMultisample = gl::TEXTURE_2D_MULTISAMPLE,
+    Tex2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
+    Tex3D = gl::TEXTURE_3D,
+    TexCubeMap = gl::TEXTURE_CUBE_MAP,
+    TexCubeMapArray = gl::TEXTURE_CUBE_MAP_ARRAY,
+    TexRectangle = gl::TEXTURE_RECTANGLE,
+}
+impl From<TextureTarget> for gl::types::GLenum {
+    fn from(item: TextureTarget) -> gl::types::GLenum {
+        item as gl::types::GLenum
+    }
+}
+
+/// Enumerate possible `GLenum` variants for representing triangle layouts.
 ///
 /// Refer to: [OpenGL docs](https://www.khronos.org/opengl/wiki/Primitive#Triangle_primitives)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

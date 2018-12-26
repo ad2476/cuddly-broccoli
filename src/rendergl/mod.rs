@@ -7,6 +7,7 @@ pub mod uniform;
 mod data;
 mod buffer;
 pub mod types;
+pub mod texture;
 
 pub use self::shader::{Shader, Program};
 pub use self::data::*;

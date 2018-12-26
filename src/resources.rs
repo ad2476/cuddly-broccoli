@@ -8,11 +8,15 @@ use std::ffi::{CString, NulError};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
+use image;
+
 /// Error types for resource loading.
 #[derive(Debug, Fail)]
 pub enum Error {
     #[fail(display = "I/O Error")]
     Io(#[cause] io::Error),
+    #[fail(display = "Image Decode Error")]
+    DecodeError(#[cause] image::ImageError),
     #[fail(display = "Failed to get executable path")]
     CurrentExeNotFound,
 }
@@ -26,6 +30,12 @@ impl From<io::Error> for Error {
 impl From<NulError> for Error {
     fn from(other: NulError) -> Self {
         Error::from(io::Error::from(other))
+    }
+}
+
+impl From<image::ImageError> for Error {
+    fn from(other: image::ImageError) -> Self {
+        Error::DecodeError(other)
     }
 }
 
@@ -55,6 +65,12 @@ impl ResourceLoader {
         let mut buf = String::new();
         file.read_to_string(&mut buf)?;
         CString::new(buf).map_err(|e| Error::from(io::Error::from(e)))
+    }
+
+    /// Load an image `resource_name` under the `ResourceLoader` root assets directory.
+    pub fn load_image(&self, resource_name: &Path) -> Result<image::DynamicImage, Error> {
+        image::open(self.path_root.join(resource_name))
+            .map_err(|e| e.into())
     }
 }
 

@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 use glm::vec3;
 
 use rendergl;
+use image::DynamicImage;
 use resources::{self, ResourceLoader};
 use shape::{self,Drawable};
 use mesh;
@@ -56,6 +57,7 @@ fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
 pub struct Scene {
     shapes: Vec<Box<Drawable>>,
     camera: Camera,
+    texture: rendergl::texture::Texture,
     program: Rc<rendergl::Program>,
     _loader: ResourceLoader,
 }
@@ -80,19 +82,36 @@ impl Scene {
             .build();
 
         let triangle = shape::Triangle::new(&animation_program);
-        let sphere = shape::Sphere::new(&lighting_program, 50, 50);
-        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
-        let mesh = make_mesh(&lighting_program);
+//        let sphere = shape::Sphere::new(&lighting_program, 50, 50);
+//        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
+//        let mesh = make_mesh(&lighting_program);
+
+        let img_path = "images/chessboard.png";
+        let img = loader.load_image(Path::new(img_path))
+            .map(|i| DynamicImage::ImageRgba8(i.to_rgba()))
+            .map_err(|e| Error::ResourceLoadError { name: img_path.into(), inner: e })?;
+        let texture = rendergl::texture::Texture::from_image(&img);
+
+        rendergl::texture::TextureParameters::new()
+            .wrap_method(rendergl::texture::WrapMethod::ClampToEdge)
+            .filter_method(rendergl::texture::FilterMethod::Linear)
+            .apply_to(&texture);
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
-        shapes.push(Box::new(sphere));
-//        shapes.push(Box::new(triangle));
-        shapes.push(Box::new(mesh));
+//        shapes.push(Box::new(sphere));
+        shapes.push(Box::new(triangle));
+//        shapes.push(Box::new(mesh));
         for shape in &mut shapes {
             shape.init()?;
         }
 
-        Ok(Scene { shapes,  camera, program: lighting_program, _loader: loader })
+        Ok(Scene {
+            shapes,
+            camera,
+            texture,
+            program: lighting_program,
+            _loader: loader
+        })
     }
 
     pub fn tick(&mut self) {
@@ -108,11 +127,13 @@ impl Scene {
             .map_err(|e| shape::DrawError::from(e))?;
         self.program.set_uniform("perspective", &self.camera.perspective)
             .map_err(|e| shape::DrawError::from(e))?;
+        self.texture.bind();
 
         for shape in &self.shapes {
             shape.draw()?;
         }
         rendergl::Program::bind_default();
+        self.texture.unbind();
         Ok(())
     }
 

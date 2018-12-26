@@ -4,6 +4,7 @@ extern crate sdl2;
 extern crate gl;
 extern crate glm;
 extern crate num;
+extern crate image;
 
 pub mod rendergl;
 pub mod resources;
@@ -71,13 +72,13 @@ fn failure_backtrace(e: failure::Error) -> String {
     use std::fmt::Write;
 
     let mut result = String::new();
-    for (i, cause) in e.iter_chain().collect::<Vec<_>>().into_iter().rev().enumerate() {
+    for (i, cause) in e.iter_chain().collect::<Vec<_>>().into_iter().enumerate() {
         if i > 0 {
-            let _ = writeln!(&mut result, "which caused the following error:");
+            let _ = writeln!(&mut result, " which caused the following error:");
         }
-        let _ = write!(&mut result, " {}", cause);
+        let _ = write!(&mut result, "{}", cause);
         if let Some(backtrace) = cause.backtrace() {
-            let bt_str = format!("{}", backtrace);
+            let bt_str = format!(" {}", backtrace);
             if bt_str.len() > 0 {
                 let _ = writeln!(&mut result, " at {}", backtrace);
             } else {

@@ -4,12 +4,15 @@ in vec2 uv;
 out vec4 outColor;
 
 uniform float u_time;
+uniform sampler2D tex;
 
 vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
 void main() {
+    outColor = texture(tex, uv) + vec4(u_time*0);
+/*
     vec2 st = uv;
     vec3 color = vec3(.0);
 
@@ -56,5 +59,5 @@ void main() {
     // Show isolines
     // color -= step(.7,abs(sin(27.0*m_dist)))*.5;
 
-    outColor = vec4(color,1.0);
+    outColor = vec4(color,1.0); */
 }
