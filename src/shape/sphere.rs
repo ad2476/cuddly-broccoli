@@ -15,7 +15,7 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(program: &Rc<rendergl::Program>, lat_strips: u32, lon_slices: u32) -> Sphere {
-        let shapegl = ShapeGL::sphere(lat_strips, lon_slices);
+        let shapegl = ShapeGL::sphere::<rendergl::VertexNT>(lat_strips, lon_slices);
         Sphere {
             program: Rc::clone(program),
             shapegl,

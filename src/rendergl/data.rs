@@ -1,6 +1,7 @@
 use gl;
 use glm;
 use rendergl::types;
+use util::SurfacePoint;
 
 /// Defines an interface for generic vertex data representations.
 ///
@@ -12,6 +13,13 @@ pub trait Vertex {
     /// Returns a list of attribute markers that determine how OpenGL
     /// should interpret the raw buffer data passed to the shader.
     fn vertex_attrib_markers() -> Vec<VBOAttribMarker>;
+
+    /// Construct an implementing type from a `SurfacePoint`.
+    ///
+    /// For example, given a `SurfacePoint`, this might involve querying methods such as
+    /// `SurfacePoint::position()` or `SurfacePoint::normal()` to construct
+    /// a `VertexN`.
+    fn from_point3d(point: &SurfacePoint) -> Self;
 }
 
 /// Representation of a vertex with position and uv coordinates.
@@ -44,10 +52,62 @@ impl Vertex for VertexUV {
         ];
         markers
     }
+
+    fn from_point3d(point: &SurfacePoint) -> VertexUV {
+        VertexUV::new(point.position(), point.texcoord())
+    }
 }
 impl From<(glm::Vec3, glm::Vec2)> for VertexUV {
     fn from(other: (glm::Vec3, glm::Vec2)) -> VertexUV {
         VertexUV::new(other.0, other.1)
+    }
+}
+
+/// Representation of a vertex with position, normal, and texture coordinates.
+#[derive(Copy, Clone, Debug)]
+#[repr(C, packed)]
+pub struct VertexNT {
+    pos: glm::Vec3,
+    n: glm::Vec3,
+    uv: glm::Vec2,
+}
+impl VertexNT {
+    pub fn new(pos: glm::Vec3, normal: glm::Vec3, uv: glm::Vec2) -> VertexNT {
+        VertexNT { pos, n: normal, uv}
+    }
+}
+impl Vertex for VertexNT {
+    fn vertex_attrib_markers() -> Vec<VBOAttribMarker> {
+        let markers: Vec<VBOAttribMarker> = vec![
+            VBOAttribMarker::new(
+                types::ShaderAttrib::POSITION,
+                types::VertexAttrib::FLOAT,
+                3,
+                gl::FALSE,
+                0),
+            VBOAttribMarker::new(
+                types::ShaderAttrib::NORMAL,
+                types::VertexAttrib::FLOAT,
+                3,
+                gl::FALSE,
+                ::std::mem::size_of::<glm::Vec3>()),
+            VBOAttribMarker::new(
+                types::ShaderAttrib::TEXCOORD0,
+                types::VertexAttrib::FLOAT,
+                2,
+                gl::FALSE,
+                ::std::mem::size_of::<glm::Vec3>() * 2)
+        ];
+        markers
+    }
+
+    fn from_point3d(point: &SurfacePoint) -> VertexNT {
+        VertexNT::new(point.position(), point.normal(), point.texcoord())
+    }
+}
+impl From<(glm::Vec3, glm::Vec3, glm::Vec2)> for VertexNT {
+    fn from(other: (glm::Vec3, glm::Vec3, glm::Vec2)) -> VertexNT {
+        VertexNT::new(other.0, other.1, other.2)
     }
 }
 
@@ -80,6 +140,10 @@ impl Vertex for VertexN {
                 ::std::mem::size_of::<glm::Vec3>())
         ];
         markers
+    }
+
+    fn from_point3d(point: &SurfacePoint) -> VertexN {
+        VertexN::new(point.position(), point.normal())
     }
 }
 impl From<(glm::Vec3, glm::Vec3)> for VertexN {

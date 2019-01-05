@@ -22,7 +22,7 @@ use glm::ext::consts;
 use glm::{self, vec3, vec2};
 use rendergl::{self,uniform};
 use rendergl::types::*;
-use util;
+use util::SurfacePoint;
 
 mod triangle;
 mod sphere;
@@ -119,11 +119,11 @@ impl ShapeGL {
     ///
     /// * `lat_strips`: number of subdivisions in latitude (vertical lod)
     /// * `lon_strips`: number of subdivisions in longitude (horizontal lod)
-    pub fn sphere(lat_strips: u32, lon_slices: u32) -> ShapeGL {
-        let mut vert_data: Vec<rendergl::VertexN> = Vec::new();
+    pub fn sphere<T: rendergl::Vertex>(lat_strips: u32, lon_slices: u32) -> ShapeGL {
+        let mut vert_data: Vec<T> = Vec::new();
         let mut index_data: Vec<u32> = Vec::new();
 
-        const R: f32 = 0.5;
+        const R: f32 = SurfacePoint::R;
         let pi: f32 = consts::pi();
 
         let lon_stepsz: f32 = 2.0*pi/(lon_slices as f32);
@@ -135,12 +135,8 @@ impl ShapeGL {
             for phi_step in 0..(lat_strips+1) {
                 let phi = lat_stepsz*(phi_step as f32);
 
-                let v = vec3(
-                    util::spherical_x(R, theta, phi),
-                    util::spherical_y(R, theta, phi),
-                    util::spherical_z(R, theta, phi));
-                let n = glm::normalize(v);
-                vert_data.push((v,n).into());
+                let p = SurfacePoint::Sphere { r: R, theta, phi };
+                vert_data.push(T::from_point3d(&p));
             }
         }
 
@@ -181,11 +177,11 @@ impl ShapeGL {
     ///
     /// * `strips`: number of vertical subdivisions
     /// * `slices`: number of radial subdivisions
-    pub fn cylinder(strips: u32, slices: u32) -> ShapeGL {
-        let mut vert_data: Vec<rendergl::VertexN> = Vec::new();
+    pub fn cylinder<T: rendergl::Vertex>(strips: u32, slices: u32) -> ShapeGL {
+        let mut vert_data: Vec<T> = Vec::new();
         let mut index_data: Vec<u32> = Vec::new();
 
-        const R: f32 = 0.5;
+        const R: f32 = SurfacePoint::R;
         let pi: f32 = consts::pi();
 
         let theta_stepsz: f32 = 2.0*pi/(slices as f32);
@@ -199,28 +195,25 @@ impl ShapeGL {
             // top cap slice
             for r_step in 0..(strips+1) {
                 let r = r_stepsz*(r_step as f32);
-                let v = vec3(util::polar_x(r, theta), R, util::polar_y(r, theta));
-                let n = vec3(0.0, 1.0, 0.0);
-                vert_data.push((v,n).into());
+
+                let p = SurfacePoint::Disk { r, theta, y: R };
+                vert_data.push(T::from_point3d(&p));
             }
 
             // slice side
-            let x_side = util::polar_x(R, theta);
-            let z_side = util::polar_y(R, theta);
             for y_step in 0..(strips+1) {
                 let y = R - side_stepsz*(y_step as f32);
-                let v = vec3(x_side, y, z_side);
-                let n = glm::normalize(vec2(x_side, z_side));
-                let n = vec3(n.x, 0.0, n.y);
-                vert_data.push((v,n).into());
+
+                let p = SurfacePoint::Cylinder { r: R, theta, y };
+                vert_data.push(T::from_point3d(&p));
             }
 
             // bottom cap slice
             for r_step in (0..(strips+1)).rev() {
                 let r = r_stepsz*(r_step as f32);
-                let v = vec3(util::polar_x(r, theta), -R, util::polar_y(r,theta));
-                let n = vec3(0.0, -1.0, 0.0);
-                vert_data.push((v,n).into());
+
+                let p = SurfacePoint::Disk { r, theta, y: -R };
+                vert_data.push(T::from_point3d(&p));
             }
         }
 

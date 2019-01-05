@@ -81,10 +81,10 @@ impl Scene {
             .up(&vec3(1.0, 1.0, 1.0))
             .build();
 
-        let triangle = shape::Triangle::new(&animation_program);
-//        let sphere = shape::Sphere::new(&lighting_program, 50, 50);
-//        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
-//        let mesh = make_mesh(&lighting_program);
+//        let triangle = shape::Triangle::new(&animation_program);
+        let sphere = shape::Sphere::new(&lighting_program, 100, 100);
+        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
+        let mesh = make_mesh(&lighting_program);
 
         let img_path = "images/chessboard.png";
         let img = loader.load_image(Path::new(img_path))
@@ -93,13 +93,13 @@ impl Scene {
         let texture = rendergl::texture::Texture::from_image(&img);
 
         rendergl::texture::TextureParameters::new()
-            .wrap_method(rendergl::texture::WrapMethod::ClampToEdge)
+            .wrap_method(rendergl::texture::WrapMethod::Repeat)
             .filter_method(rendergl::texture::FilterMethod::Linear)
             .apply_to(&texture);
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
-//        shapes.push(Box::new(sphere));
-        shapes.push(Box::new(triangle));
+        shapes.push(Box::new(cylinder));
+//        shapes.push(Box::new(triangle));
 //        shapes.push(Box::new(mesh));
         for shape in &mut shapes {
             shape.init()?;
