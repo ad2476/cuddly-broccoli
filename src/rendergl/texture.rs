@@ -119,7 +119,6 @@ pub enum Texture {
     // TODO: enumerate more texture targets
 }
 
-// TODO: support mipmaps
 impl Texture {
     fn gen_handle() -> gl::types::GLuint {
         let mut id: gl::types::GLuint = 0;
@@ -164,6 +163,16 @@ impl Texture {
     pub fn target(&self) -> TextureTarget {
         match self {
             Texture::Texture2D(_) => TextureTarget::Tex2D,
+        }
+    }
+
+    /// Generate mipmaps for this texture's target type.
+    /// Texture must be bound.
+    ///
+    /// See [glGenerateMipmap](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenerateMipmap.xhtml).
+    pub fn generate_mipmap(&self) {
+        unsafe {
+            gl::GenerateMipmap(self.target().into());
         }
     }
 
