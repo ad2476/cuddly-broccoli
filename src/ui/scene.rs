@@ -69,6 +69,8 @@ pub struct Scene {
 }
 
 impl Scene {
+    const ROT_DELTA: f32 = 0.01;
+
     pub fn new(assets_dir: &str) -> Result<Scene, Error> {
         let loader = ResourceLoader::new(Path::new(assets_dir))
             .map_err(|e| Error::ResourceLoadError { name: assets_dir.into(), inner: e })?;
@@ -76,8 +78,8 @@ impl Scene {
 
         let camera = CameraBuilder::new()
             .eye(&vec3(1.5,1.0,1.5))
-            .look(&vec3(-1.0, -1.0, -1.0))
-            .up(&vec3(1.0, 1.0, 1.0))
+            .look(&vec3(-1.5, -1.0, -1.5))
+            .up(&vec3(-1.0, 1.0, -1.0))
             .build();
 
         let sphere = shape::ShaderShape::sphere(&loader, 100, 100)?;
@@ -121,10 +123,26 @@ impl Scene {
 
     pub fn on_keydown(&mut self, keycode: &Keycode) -> Result<(), Error> {
         match keycode {
-            Keycode::Left => {},
-            Keycode::Right => {},
-            Keycode::Up => {},
-            Keycode::Down => {},
+            Keycode::Left => {
+                self.camera.orbit(-Scene::ROT_DELTA, &glm::vec3(0.0, 1.0, 0.0));
+            },
+            Keycode::Right => {
+                self.camera.orbit(Scene::ROT_DELTA, &glm::vec3(0.0, 1.0, 0.0));
+            },
+            Keycode::Up => {
+                let axis = {
+                    let params = self.camera.params();
+                    glm::cross(params.up, params.look)
+                };
+                self.camera.orbit(Scene::ROT_DELTA, &axis);
+            },
+            Keycode::Down => {
+                let axis = {
+                    let params = self.camera.params();
+                    glm::cross(params.up, params.look)
+                };
+                self.camera.orbit(-Scene::ROT_DELTA, &axis);
+            },
             Keycode::F => {
                 unsafe {
                     gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);

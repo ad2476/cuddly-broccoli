@@ -5,16 +5,17 @@
 //! a shader which understands how to apply the homographic transform.
 
 use glm;
+use num;
 
 /// Builder pattern for constructing a `Camera` out of parameters.
 pub struct CameraBuilder {
-    eye: glm::Vec3,
-    look: glm::Vec3,
-    up: glm::Vec3,
-    near: f32,
-    far: f32,
-    ratio: f32,
-    fov: f32,
+    pub eye: glm::Vec3,
+    pub look: glm::Vec3,
+    pub up: glm::Vec3,
+    pub near: f32,
+    pub far: f32,
+    pub ratio: f32,
+    pub fov: f32,
 }
 
 impl CameraBuilder {
@@ -93,6 +94,10 @@ impl Camera {
         Camera { perspective, view, params }
     }
 
+    pub fn params(&self) -> &CameraBuilder {
+        &self.params
+    }
+
     fn create_perspective(params: &CameraBuilder) -> glm::Mat4 {
         glm::ext::perspective(params.fov, params.ratio, params.near,params.far)
     }
@@ -119,5 +124,27 @@ impl Camera {
     pub fn zoom(&mut self, delta: f32) {
         let v = self.params.look*delta;
         self.translate(v);
+    }
+
+    /// Rotate the camera around a fixed axis (in world-space), while looking at the origin.
+    ///
+    /// * `angle`: in radians
+    /// * `axis`: in world-space
+    pub fn orbit(&mut self, angle: f32, axis: &glm::Vec3) {
+        let rotate = glm::ext::rotate(&num::one(), angle, *axis);
+        let eye = {
+            let eye = &self.params.eye;
+            (rotate * glm::vec4(eye.x, eye.y, eye.z, 1.0))
+                .truncate(3)
+        };
+        let up = {
+            let up = &self.params.up;
+            (rotate * glm::vec4(up.x, up.y, up.z, 0.0))
+                .truncate(3)
+        };
+        self.params.eye = eye;
+        self.params.up = up;
+        self.params.look = -eye;
+        self.view = Camera::create_view(&self.params);
     }
 }
