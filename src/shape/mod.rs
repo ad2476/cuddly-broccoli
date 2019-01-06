@@ -17,30 +17,46 @@
 //! let shader: rendergl::Program; // load a shader
 //! let sphere = Sphere::new(&shader, 50, 50);
 //! ```
-
 use glm::ext::consts;
-use glm::{self, vec3, vec2};
+
 use rendergl::{self,uniform};
 use rendergl::types::*;
 use util::SurfacePoint;
+use resources;
+use camera::Camera;
 
-mod triangle;
-mod sphere;
-mod cylinder;
+mod quad;
+mod skybox;
+mod shadershape;
 
-pub use self::triangle::Triangle;
-pub use self::sphere::Sphere;
-pub use self::cylinder::Cylinder;
+pub use self::quad::Quad;
+pub use self::skybox::Skybox;
+pub use self::shadershape::ShaderShape;
 
 #[derive(Debug, Fail)]
 pub enum DrawError {
     #[fail(display = "Uniform error")]
     UniformError { #[cause] inner: uniform::Error },
 }
-
 impl From<uniform::Error> for DrawError {
     fn from(other: uniform::Error) -> Self {
         DrawError::UniformError { inner: other }
+    }
+}
+
+#[derive(Debug)]
+pub enum InitError {
+    ShaderError(rendergl::shader::Error),
+    ResourceError(resources::Error),
+}
+impl From<rendergl::shader::Error> for InitError {
+    fn from(other: rendergl::shader::Error) -> Self {
+        InitError::ShaderError(other)
+    }
+}
+impl From<resources::Error> for InitError {
+    fn from(other: resources::Error) -> Self {
+        InitError::ResourceError(other)
     }
 }
 
@@ -49,7 +65,7 @@ impl From<uniform::Error> for DrawError {
 pub trait Drawable {
     fn init(&mut self) -> Result<(), DrawError> { Ok(()) }
     fn tick(&mut self) { }
-    fn draw(&self) -> Result<(), DrawError>;
+    fn draw(&self, camera: &Camera) -> Result<(), DrawError>;
 }
 
 /// Owner of OpenGL handles for VBO, IBO, VAO.

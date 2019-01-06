@@ -60,7 +60,7 @@ impl SurfacePoint {
                 let v = phi / f32::consts::PI;
                 glm::vec2(u, v)
             },
-            SurfacePoint::Cylinder { r, theta, y } => {
+            SurfacePoint::Cylinder { theta, y, .. } => {
                 let u = -theta / (2.0 * f32::consts::PI);
                 let v = -y - 0.5;
                 glm::vec2(u, v)

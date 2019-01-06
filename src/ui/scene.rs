@@ -1,11 +1,9 @@
 use std::path::Path;
-use std::rc::Rc;
 use gl;
 use sdl2::keyboard::Keycode;
 use glm::vec3;
 
 use rendergl;
-use image::DynamicImage;
 use resources::{self, ResourceLoader};
 use shape::{self,Drawable};
 use mesh;
@@ -34,7 +32,17 @@ impl From<shape::DrawError> for Error {
     }
 }
 
-fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
+impl From<shape::InitError> for Error {
+    fn from(other: shape::InitError) -> Self {
+        match other {
+            shape::InitError::ResourceError(e) =>
+                Error::ResourceLoadError { name: "ShaderShape".into(), inner: e },
+            shape::InitError::ShaderError(e) => Error::ShaderError { inner: e },
+        }
+    }
+}
+
+fn make_mesh(loader: &resources::ResourceLoader) -> Result<mesh::MeshObject, shape::InitError> {
     let mut depth_data = Vec::new();
     let w = 20;
     let h = 20;
@@ -45,7 +53,7 @@ fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
             depth_data.push(1.0 - (x*x + y*y) - 0.5);
         }
     }
-    mesh::DepthMesh::new(&depth_data, h, w).build_shape(&program)
+    mesh::DepthMesh::new(&depth_data, h, w).build_shape(&loader)
 }
 
 /// Scene implementation.
@@ -57,8 +65,6 @@ fn make_mesh(program: &Rc<rendergl::Program>) -> mesh::MeshObject {
 pub struct Scene {
     shapes: Vec<Box<Drawable>>,
     camera: Camera,
-    texture: rendergl::texture::Texture,
-    program: Rc<rendergl::Program>,
     _loader: ResourceLoader,
 }
 
@@ -68,39 +74,19 @@ impl Scene {
             .map_err(|e| Error::ResourceLoadError { name: assets_dir.into(), inner: e })?;
         println!("{}", loader);
 
-        let lighting_program = Rc::new(
-            rendergl::Program::from_res(&loader, "shaders/shader")?
-        );
-        let animation_program = Rc::new(
-            rendergl::Program::from_res(&loader, "shaders/triangle")?
-        );
-
         let camera = CameraBuilder::new()
             .eye(&vec3(1.5,1.0,1.5))
             .look(&vec3(-1.0, -1.0, -1.0))
             .up(&vec3(1.0, 1.0, 1.0))
             .build();
 
-//        let triangle = shape::Triangle::new(&animation_program);
-        let sphere = shape::Sphere::new(&lighting_program, 100, 100);
-        let cylinder = shape::Cylinder::new(&lighting_program, 50, 50);
-        let mesh = make_mesh(&lighting_program);
-
-        let img_path = "images/chessboard.png";
-        let img = loader.load_image(Path::new(img_path))
-            .map(|i| DynamicImage::ImageRgba8(i.to_rgba()))
-            .map_err(|e| Error::ResourceLoadError { name: img_path.into(), inner: e })?;
-        let texture = rendergl::texture::Texture::from_image(&img);
-
-        rendergl::texture::TextureParameters::new()
-            .wrap_method(rendergl::texture::WrapMethod::Repeat)
-            .filter_method(rendergl::texture::FilterMethod::Linear)
-            .apply_to(&texture);
+        let sphere = shape::ShaderShape::sphere(&loader, 100, 100)?;
+//        let cylinder = shape::ShaderShape::cylinder(&loader, 50, 50)?;
+        let skybox = shape::Skybox::new(&loader)?;
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();
-        shapes.push(Box::new(cylinder));
-//        shapes.push(Box::new(triangle));
-//        shapes.push(Box::new(mesh));
+        shapes.push(Box::new(sphere));
+        shapes.push(Box::new(skybox));
         for shape in &mut shapes {
             shape.init()?;
         }
@@ -108,8 +94,6 @@ impl Scene {
         Ok(Scene {
             shapes,
             camera,
-            texture,
-            program: lighting_program,
             _loader: loader
         })
     }
@@ -122,18 +106,10 @@ impl Scene {
 
     /// Render the objects in the scene.
     pub fn render(&self) -> Result<(), Error> {
-        self.program.bind();
-        self.program.set_uniform("view", &self.camera.view)
-            .map_err(|e| shape::DrawError::from(e))?;
-        self.program.set_uniform("perspective", &self.camera.perspective)
-            .map_err(|e| shape::DrawError::from(e))?;
-        self.texture.bind();
-
         for shape in &self.shapes {
-            shape.draw()?;
+            shape.draw(&self.camera)?;
         }
         rendergl::Program::bind_default();
-        self.texture.unbind();
         Ok(())
     }
 

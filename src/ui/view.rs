@@ -40,6 +40,7 @@ impl View {
             gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
 
             gl::Enable(gl::DEPTH_TEST);
+            gl::DepthFunc(gl::LEQUAL); // allow depth values of 1.0 to render
             gl::Enable(gl::CULL_FACE);
             gl::CullFace(gl::BACK);
             gl::FrontFace(gl::CCW);

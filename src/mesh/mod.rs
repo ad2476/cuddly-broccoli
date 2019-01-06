@@ -1,17 +1,17 @@
 //! 3D mesh implementation.
-
-use std::rc::Rc;
 use std::cmp::{min,max};
+
 use glm;
 use num;
 use util;
+use camera::Camera;
+use resources::ResourceLoader;
 use rendergl::{Program, VertexN, types};
-use shape::{ShapeGL, Drawable, DrawError};
+use shape::{ShapeGL, Drawable, DrawError, InitError};
 
-// TODO: will need to refactor into a generic shape object thingy
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
-    program: Rc<Program>,
+    program: Program,
     shapegl: ShapeGL,
     transform: glm::Mat4,
     time: u32,
@@ -22,8 +22,10 @@ impl Drawable for MeshObject {
         self.time += 1;
     }
 
-    fn draw(&self) -> Result<(), DrawError> {
+    fn draw(&self, camera: &Camera) -> Result<(), DrawError> {
         self.program.bind();
+        self.program.set_uniform("view", &camera.view)?;
+        self.program.set_uniform("perspective", &camera.perspective)?;
         self.program.set_uniform("model", &self.transform)?;
         self.program.set_uniform("u_time", &self.time)?;
         self.shapegl.draw_vertices();
@@ -65,14 +67,15 @@ impl DepthMesh {
 
     /// Constructs vertex data out of this `DepthMesh`'s 3D point cloud and returns a `MeshObject`
     /// for rendering with OpenGL.
-    pub fn build_shape(&self, program: &Rc<Program>) -> MeshObject {
+    pub fn build_shape(&self, loader: &ResourceLoader) -> Result<MeshObject, InitError> {
         let shapegl = self.init_buffers();
-        MeshObject {
-            program: Rc::clone(program),
+        let program = Program::from_res(loader, "shaders/mesh")?;
+        Ok(MeshObject {
+            program,
             shapegl,
             transform: glm::ext::scale(&num::one(), self.size),
             time: 0
-        }
+        })
     }
 
     fn push_indices(&self, index_data: &mut Vec<u32>, p1: (i32, i32), p2: (i32, i32)) {

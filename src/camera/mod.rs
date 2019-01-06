@@ -27,8 +27,8 @@ impl CameraBuilder {
             eye: glm::vec3(0.0, 0.0, 2.0),
             look: glm::vec3(0.0, 0.0, -1.0),
             up: glm::vec3(0.0, 1.0, 0.0),
-            near: 1.0,
-            far: 80.0,
+            near: 0.5,
+            far: 50.0,
             ratio: 1.0,
             fov: glm::ext::pi::<f32,f32>()/3.0
         }
