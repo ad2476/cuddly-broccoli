@@ -22,6 +22,40 @@ pub trait Vertex {
     fn from_point3d(point: &SurfacePoint) -> Self;
 }
 
+/// Representation of a vertex with position.
+#[derive(Copy, Clone, Debug)]
+#[repr(C, packed)]
+pub struct VertexP {
+    pos: glm::Vec3,
+}
+impl VertexP {
+    pub fn new(pos: glm::Vec3) -> VertexP {
+        VertexP { pos }
+    }
+}
+impl Vertex for VertexP {
+    fn vertex_attrib_markers() -> Vec<VBOAttribMarker> {
+        let markers: Vec<VBOAttribMarker> = vec![
+            VBOAttribMarker::new(
+                types::ShaderAttrib::POSITION,
+                types::VertexAttrib::FLOAT,
+                3,
+                gl::FALSE,
+                0)
+        ];
+        markers
+    }
+
+    fn from_point3d(point: &SurfacePoint) -> VertexP {
+        VertexP::new(point.position())
+    }
+}
+impl From<glm::Vec3> for VertexP {
+    fn from(other: glm::Vec3) -> VertexP {
+        VertexP::new(other)
+    }
+}
+
 /// Representation of a vertex with position and uv coordinates.
 #[derive(Copy, Clone, Debug)]
 #[repr(C, packed)]
