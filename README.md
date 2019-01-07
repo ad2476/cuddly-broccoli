@@ -1,11 +1,7 @@
 # Cuddly Broccoli 🥦
 
-OpenGL things in Rust. Aims to provide safe abstractions on top of OpenGL functions, data structures and types. The goal is to be
-a starting point for more advanced graphics tasks.
-
-## Documentation
-
-Run `cargo doc` from the project root to generate documentation.
+OpenGL things in Rust. Aims to provide safe abstractions on top of OpenGL functions, data structures and types.
+The goal is to be a starting point for more advanced graphics tasks.
 
 ## Features
 
@@ -21,6 +17,19 @@ A running list of what's been implemented so far:
 * Abstractions on OpenGL textures: 2D texture and cubemap targets
 * Skybox as cubemapped cube.
 * Basic lighting model with ambient and diffuse illumination.
+
+## Documentation
+
+Run `cargo doc` from the project root to generate documentation.
+
+## Build requirements
+
+You will need the latest stable version of Rust, preferably installed via [rustup](https://www.rust-lang.org/tools/install).
+Install [SDL2](https://www.libsdl.org/) through your package manager (e.g. `apt-get`, `dnf`, `pacman`, `brew`).
+
+This project is confirmed to work on OS X up to 10.14.1 (Mojave) or Linux. No guarantees for Windows.
+
+A discrete GPU not required, but can be very useful.
 
 ## Screenshot
 
