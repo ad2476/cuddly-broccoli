@@ -22,6 +22,10 @@ A running list of what's been implemented so far:
 * Skybox as cubemapped cube.
 * Basic lighting model with ambient and diffuse illumination.
 
+## Screenshot
+
+![Textured sphere with skybox](https://arundreli.ch/files/screenshot0.png)
+
 ## References
 
 * [Brown CS1230: Introduction to Computer Graphics](http://cs.brown.edu/courses/cs123/)
