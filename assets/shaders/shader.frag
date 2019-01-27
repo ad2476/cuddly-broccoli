@@ -6,8 +6,7 @@ in vec2 uv; // texture sampling coordinates
 
 out vec3 fragColor;
 
-//uniform float u_time;
-uniform uint u_time;
+uniform float u_time;
 uniform sampler2D tex;
 
 const float light_dist = 10.0;
