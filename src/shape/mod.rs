@@ -146,7 +146,7 @@ impl ShapeGL {
         let lat_stepsz: f32 = pi/(lat_strips as f32);
 
         // generate vertices
-        for theta_step in 0..lon_slices {
+        for theta_step in 0..(lon_slices+1) {
             let theta = -lon_stepsz*(theta_step as f32);
             for phi_step in 0..(lat_strips+1) {
                 let phi = lat_stepsz*(phi_step as f32);
@@ -205,7 +205,7 @@ impl ShapeGL {
         let side_stepsz: f32 = 2.0*R/(strips as f32);
 
         // generate vertices
-        for theta_step in 0..slices {
+        for theta_step in 0..(slices+1) {
             let theta = -theta_stepsz*(theta_step as f32);
 
             // top cap slice
