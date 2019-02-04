@@ -2,14 +2,14 @@
 //!
 //! Exposes safe abstractions on top of OpenGL API calls.
 
-pub mod shader;
-pub mod uniform;
-mod data;
 mod buffer;
-pub mod types;
+mod data;
+pub mod shader;
 pub mod texture;
+pub mod types;
+pub mod uniform;
 
-pub use self::shader::{Shader, Program};
-pub use self::data::*;
 pub use self::buffer::*;
-pub use self::uniform::{UniformSet};
+pub use self::data::*;
+pub use self::shader::{Program, Shader};
+pub use self::uniform::UniformSet;

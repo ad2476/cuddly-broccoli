@@ -3,8 +3,8 @@
 //! Use `ResourceLoader` for loading files from a resource root path.
 
 use std;
-use std::fs;
 use std::ffi::{CString, NulError};
+use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
@@ -55,7 +55,9 @@ impl ResourceLoader {
     pub fn new(assets: &Path) -> Result<ResourceLoader, Error> {
         let exec_path = std::env::current_exe().map_err(|_| Error::CurrentExeNotFound)?;
         let parent_dir = exec_path.parent().ok_or(Error::CurrentExeNotFound)?;
-        Ok( ResourceLoader { path_root: parent_dir.join(assets) } )
+        Ok(ResourceLoader {
+            path_root: parent_dir.join(assets),
+        })
     }
 
     /// Load a resource file named `resource_name` under the `ResourceLoader`'s
@@ -69,13 +71,16 @@ impl ResourceLoader {
 
     /// Load an image `resource_name` under the `ResourceLoader` root assets directory.
     pub fn load_image(&self, resource_name: &Path) -> Result<image::DynamicImage, Error> {
-        image::open(self.path_root.join(resource_name))
-            .map_err(|e| e.into())
+        image::open(self.path_root.join(resource_name)).map_err(|e| e.into())
     }
 }
 
 impl std::fmt::Display for ResourceLoader {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "ResourceLoader {{ path_root: {} }}", self.path_root.display())
+        write!(
+            f,
+            "ResourceLoader {{ path_root: {} }}",
+            self.path_root.display()
+        )
     }
 }

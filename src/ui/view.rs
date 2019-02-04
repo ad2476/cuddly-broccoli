@@ -1,5 +1,5 @@
-use sdl2;
 use gl;
+use sdl2;
 use std;
 
 /// Owns handles to SDL and GL contexts. Processes events and renders OpenGL scene.
@@ -11,7 +11,6 @@ pub struct View {
 }
 
 impl View {
-
     /// Create a new `View`. Initialises SDL, window context, GL context.
     ///
     /// Sets up the OpenGL viewport, background colour. Enables depth testing, back-face culling,
@@ -25,14 +24,16 @@ impl View {
         gl_attr.set_context_version(4, 1);
 
         let window_ctx = video_subsystem
-                        .window(window_title, width, height)
-                        .opengl()
-                        .resizable()
-                        .build()
-                        .map_err(|e| format!("{}", e))?;
+            .window(window_title, width, height)
+            .opengl()
+            .resizable()
+            .build()
+            .map_err(|e| format!("{}", e))?;
 
         let gl_ctx = window_ctx.gl_create_context()?;
-        let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+        let _gl = gl::load_with(|s| {
+            video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void
+        });
 
         unsafe {
             gl::Viewport(0, 0, width as i32, height as i32);
@@ -51,7 +52,8 @@ impl View {
             _sdl_ctx: sdl,
             _gl_ctx: gl_ctx,
             event_pump,
-            window_ctx })
+            window_ctx,
+        })
     }
 
     pub fn poll_events(&mut self) -> sdl2::event::EventPollIterator {

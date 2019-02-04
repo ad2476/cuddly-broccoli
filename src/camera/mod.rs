@@ -31,7 +31,7 @@ impl CameraBuilder {
             near: 0.5,
             far: 50.0,
             ratio: 1.0,
-            fov: glm::ext::pi::<f32,f32>()/3.0
+            fov: glm::ext::pi::<f32, f32>() / 3.0,
         }
     }
 
@@ -85,13 +85,16 @@ pub struct Camera {
 }
 
 impl Camera {
-
     /// Construct a new `Camera` by consuming a `CameraBuilder` instance.
     pub fn new(params: CameraBuilder) -> Camera {
         let view = Camera::create_view(&params);
         let perspective = Camera::create_perspective(&params);
 
-        Camera { perspective, view, params }
+        Camera {
+            perspective,
+            view,
+            params,
+        }
     }
 
     pub fn params(&self) -> &CameraBuilder {
@@ -99,7 +102,7 @@ impl Camera {
     }
 
     fn create_perspective(params: &CameraBuilder) -> glm::Mat4 {
-        glm::ext::perspective(params.fov, params.ratio, params.near,params.far)
+        glm::ext::perspective(params.fov, params.ratio, params.near, params.far)
     }
 
     fn create_view(params: &CameraBuilder) -> glm::Mat4 {
@@ -122,7 +125,7 @@ impl Camera {
     /// Zoom by translating along the camera's `look` vector. This will rebuild the camera's view
     /// transform.
     pub fn zoom(&mut self, delta: f32) {
-        let v = self.params.look*delta;
+        let v = self.params.look * delta;
         self.translate(v);
     }
 
@@ -134,13 +137,11 @@ impl Camera {
         let rotate = glm::ext::rotate(&num::one(), angle, *axis);
         let eye = {
             let eye = &self.params.eye;
-            (rotate * glm::vec4(eye.x, eye.y, eye.z, 1.0))
-                .truncate(3)
+            (rotate * glm::vec4(eye.x, eye.y, eye.z, 1.0)).truncate(3)
         };
         let up = {
             let up = &self.params.up;
-            (rotate * glm::vec4(up.x, up.y, up.z, 0.0))
-                .truncate(3)
+            (rotate * glm::vec4(up.x, up.y, up.z, 0.0)).truncate(3)
         };
         self.params.eye = eye;
         self.params.up = up;

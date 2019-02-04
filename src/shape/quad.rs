@@ -1,11 +1,11 @@
-use std::rc::Rc;
-use rendergl::types::*;
-use rendergl;
 use camera::Camera;
-use glm::{self,vec3,vec2};
+use glm::{self, vec2, vec3};
 use num;
+use rendergl;
+use rendergl::types::*;
+use std::rc::Rc;
 
-use shape::{Drawable, DrawError};
+use shape::{DrawError, Drawable};
 
 /// A `Drawable` quad
 pub struct Quad {
@@ -23,24 +23,17 @@ impl Quad {
             (vec3(-0.5, -0.5, 0.5), vec2(0.0, 0.0)).into(),
             (vec3(0.5, -0.5, 0.5), vec2(1.0, 0.0)).into(),
             (vec3(-0.5, 0.5, 0.5), vec2(0.0, 1.0)).into(),
-            (vec3(0.5, 0.5, 0.5), vec2(1.0, 1.0)).into()
+            (vec3(0.5, 0.5, 0.5), vec2(1.0, 1.0)).into(),
         ];
         Quad::from_data(vertex_data, program)
     }
 
-    pub fn from_data(
-        data: Vec<rendergl::VertexUV>,
-        program: &Rc<rendergl::Program>
-    ) -> Quad {
+    pub fn from_data(data: Vec<rendergl::VertexUV>, program: &Rc<rendergl::Program>) -> Quad {
         let index_data: Vec<u32> = vec![0, 1, 2, 2, 1, 3];
 
         let vbo = rendergl::VBO::from_data(&data);
         let ibo = rendergl::IBO::from_data(&index_data);
-        let vao = rendergl::VAO::new(
-            &vbo,
-            Some(&ibo),
-            GlLayout::Triangles
-        );
+        let vao = rendergl::VAO::new(&vbo, Some(&ibo), GlLayout::Triangles);
 
         Quad {
             program: Rc::clone(program),
@@ -48,7 +41,7 @@ impl Quad {
             ibo,
             vao,
             transform: glm::ext::scale(&num::one(), glm::vec3(2.0, 2.0, 1.0)),
-            time: 0.
+            time: 0.,
         }
     }
 }
@@ -72,4 +65,3 @@ impl Drawable for Quad {
         Ok(())
     }
 }
-

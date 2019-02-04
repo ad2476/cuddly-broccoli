@@ -19,8 +19,8 @@
 //! ```
 
 use gl;
-use image::{GenericImageView, DynamicImage};
-use rendergl::types::{TextureTarget, TextureParam};
+use image::{DynamicImage, GenericImageView};
+use rendergl::types::{TextureParam, TextureTarget};
 
 /// Enumerate valid `GLenum` variants for `gl::TEXTURE_*_FILTER` parameters.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -71,16 +71,17 @@ pub struct TextureParameters {
 }
 
 impl TextureParameters {
-
     /// Construct a new `TextureParameters` instance.
     pub fn new() -> TextureParameters {
-        TextureParameters {
-            params: Vec::new(),
-        }
+        TextureParameters { params: Vec::new() }
     }
 
     /// Set a value for a parameter to `glTexParameteri`.
-    pub fn set_param(&mut self, param: TextureParam, value: gl::types::GLenum) -> &mut TextureParameters {
+    pub fn set_param(
+        &mut self,
+        param: TextureParam,
+        value: gl::types::GLenum,
+    ) -> &mut TextureParameters {
         self.params.push((param, value));
         self
     }
@@ -132,7 +133,8 @@ impl Texture {
 
     fn gen_handle() -> gl::types::GLuint {
         let mut id: gl::types::GLuint = 0;
-        unsafe { // generate a texture handle
+        unsafe {
+            // generate a texture handle
             gl::GenTextures(1, &mut id);
         }
         id
@@ -158,14 +160,15 @@ impl Texture {
         unsafe {
             gl::TexImage2D(
                 target, // texture target
-                level, // mipmap level
+                level,  // mipmap level
                 Texture::INTERNAL_FORMAT,
                 width as i32,
                 height as i32,
                 0, // must be 0 (OpenGL....)
                 format,
                 Texture::PIXEL_TYPE, // data type of pixel data
-                pixels);
+                pixels,
+            );
         }
     }
 
@@ -204,7 +207,7 @@ impl Texture {
     /// * `None` otherwise.
     pub fn cubemap(faces: &[DynamicImage]) -> Option<Texture> {
         if faces.len() != 6 {
-            return None
+            return None;
         }
 
         let tex = Texture::texture_cubemap();
@@ -233,13 +236,16 @@ impl Texture {
     ///
     /// See [glBindTexture](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml).
     pub fn bind(&self) {
-        unsafe { gl::BindTexture(self.target.into(), self.id); }
+        unsafe {
+            gl::BindTexture(self.target.into(), self.id);
+        }
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindTexture(self.target.into(), 0); }
+        unsafe {
+            gl::BindTexture(self.target.into(), 0);
+        }
     }
-
 }
 
 impl Drop for Texture {

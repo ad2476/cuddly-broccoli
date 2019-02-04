@@ -19,24 +19,27 @@
 //! ```
 use glm::ext::consts;
 
-use rendergl::{self,uniform};
-use rendergl::types::*;
-use util::SurfacePoint;
-use resources;
 use camera::Camera;
+use rendergl::types::*;
+use rendergl::{self, uniform};
+use resources;
+use util::SurfacePoint;
 
 mod quad;
-mod skybox;
 mod shadershape;
+mod skybox;
 
 pub use self::quad::Quad;
-pub use self::skybox::Skybox;
 pub use self::shadershape::ShaderShape;
+pub use self::skybox::Skybox;
 
 #[derive(Debug, Fail)]
 pub enum DrawError {
     #[fail(display = "Uniform error")]
-    UniformError { #[cause] inner: uniform::Error },
+    UniformError {
+        #[cause]
+        inner: uniform::Error,
+    },
 }
 impl From<uniform::Error> for DrawError {
     fn from(other: uniform::Error) -> Self {
@@ -63,8 +66,10 @@ impl From<resources::Error> for InitError {
 /// Trait for any object that should be drawable
 /// in the scene.
 pub trait Drawable {
-    fn init(&mut self) -> Result<(), DrawError> { Ok(()) }
-    fn tick(&mut self) { }
+    fn init(&mut self) -> Result<(), DrawError> {
+        Ok(())
+    }
+    fn tick(&mut self) {}
     fn draw(&self, camera: &Camera) -> Result<(), DrawError>;
 }
 
@@ -106,16 +111,16 @@ impl ShapeGL {
     pub fn new<T: rendergl::Vertex>(
         vertex_data: &[T],
         indices: &[u32],
-        layout: GlLayout
+        layout: GlLayout,
     ) -> ShapeGL {
         let vbo = rendergl::VBO::from_data(vertex_data);
         let ibo = rendergl::IBO::from_data(indices);
-        let vao = rendergl::VAO::new(
-            &vbo,
-            Some(&ibo),
-            layout
-        );
-        ShapeGL { _vbo: vbo, ibo, vao }
+        let vao = rendergl::VAO::new(&vbo, Some(&ibo), layout);
+        ShapeGL {
+            _vbo: vbo,
+            ibo,
+            vao,
+        }
     }
 
     /// Draw vertex data using internal VAO and IBO.
@@ -142,14 +147,14 @@ impl ShapeGL {
         const R: f32 = SurfacePoint::R;
         let pi: f32 = consts::pi();
 
-        let lon_stepsz: f32 = 2.0*pi/(lon_slices as f32);
-        let lat_stepsz: f32 = pi/(lat_strips as f32);
+        let lon_stepsz: f32 = 2.0 * pi / (lon_slices as f32);
+        let lat_stepsz: f32 = pi / (lat_strips as f32);
 
         // generate vertices
         for theta_step in 0..lon_slices {
-            let theta = -lon_stepsz*(theta_step as f32);
-            for phi_step in 0..(lat_strips+1) {
-                let phi = lat_stepsz*(phi_step as f32);
+            let theta = -lon_stepsz * (theta_step as f32);
+            for phi_step in 0..(lat_strips + 1) {
+                let phi = lat_stepsz * (phi_step as f32);
 
                 let p = SurfacePoint::Sphere { r: R, theta, phi };
                 vert_data.push(T::from_point3d(&p));
@@ -200,33 +205,33 @@ impl ShapeGL {
         const R: f32 = SurfacePoint::R;
         let pi: f32 = consts::pi();
 
-        let theta_stepsz: f32 = 2.0*pi/(slices as f32);
-        let r_stepsz: f32 = R/(strips as f32);
-        let side_stepsz: f32 = 2.0*R/(strips as f32);
+        let theta_stepsz: f32 = 2.0 * pi / (slices as f32);
+        let r_stepsz: f32 = R / (strips as f32);
+        let side_stepsz: f32 = 2.0 * R / (strips as f32);
 
         // generate vertices
         for theta_step in 0..slices {
-            let theta = -theta_stepsz*(theta_step as f32);
+            let theta = -theta_stepsz * (theta_step as f32);
 
             // top cap slice
-            for r_step in 0..(strips+1) {
-                let r = r_stepsz*(r_step as f32);
+            for r_step in 0..(strips + 1) {
+                let r = r_stepsz * (r_step as f32);
 
                 let p = SurfacePoint::Disk { r, theta, y: R };
                 vert_data.push(T::from_point3d(&p));
             }
 
             // slice side
-            for y_step in 0..(strips+1) {
-                let y = R - side_stepsz*(y_step as f32);
+            for y_step in 0..(strips + 1) {
+                let y = R - side_stepsz * (y_step as f32);
 
                 let p = SurfacePoint::Cylinder { r: R, theta, y };
                 vert_data.push(T::from_point3d(&p));
             }
 
             // bottom cap slice
-            for r_step in (0..(strips+1)).rev() {
-                let r = r_stepsz*(r_step as f32);
+            for r_step in (0..(strips + 1)).rev() {
+                let r = r_stepsz * (r_step as f32);
 
                 let p = SurfacePoint::Disk { r, theta, y: -R };
                 vert_data.push(T::from_point3d(&p));
@@ -236,7 +241,7 @@ impl ShapeGL {
         let nvert = vert_data.len() as u32;
 
         // generate indices
-        let stride = 3*(strips+1); // each slice has `stride` vertices in it
+        let stride = 3 * (strips + 1); // each slice has `stride` vertices in it
         for slice in 0..slices {
             let istart = slice * stride;
             index_data.push(istart);

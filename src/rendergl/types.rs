@@ -39,7 +39,7 @@ impl From<TextureParam> for gl::types::GLenum {
 #[repr(u32)]
 pub enum TextureTarget {
     Tex1D = gl::TEXTURE_1D,
-    Tex1DArray= gl::TEXTURE_1D_ARRAY,
+    Tex1DArray = gl::TEXTURE_1D_ARRAY,
     Tex2D = gl::TEXTURE_2D,
     Tex2DArray = gl::TEXTURE_2D_ARRAY,
     Tex2DMultisample = gl::TEXTURE_2D_MULTISAMPLE,
@@ -133,4 +133,3 @@ impl From<VertexAttrib> for gl::types::GLenum {
         item as gl::types::GLenum
     }
 }
-

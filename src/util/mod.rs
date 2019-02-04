@@ -1,6 +1,6 @@
 //! Utility functions and data types.
-use std::f32;
 use glm;
+use std::f32;
 
 /// A point on a 3D shape primitive.
 pub enum SurfacePoint {
@@ -18,21 +18,14 @@ impl SurfacePoint {
     /// Returns 3D position as cartesian coordinate vector.
     pub fn position(&self) -> glm::Vec3 {
         match *self {
-            SurfacePoint::Sphere { r, theta, phi } =>
-                glm::vec3(
-                    spherical_x(r, theta, phi),
-                    spherical_y(r, theta, phi),
-                    spherical_z(r, theta, phi)
-                )
-            ,
-            SurfacePoint::Cylinder {r, theta, y }
-            | SurfacePoint::Disk { r, theta, y } =>
-                glm::vec3(
-                    polar_x(r, theta),
-                    y,
-                    polar_y(r, theta)
-                )
-            ,
+            SurfacePoint::Sphere { r, theta, phi } => glm::vec3(
+                spherical_x(r, theta, phi),
+                spherical_y(r, theta, phi),
+                spherical_z(r, theta, phi),
+            ),
+            SurfacePoint::Cylinder { r, theta, y } | SurfacePoint::Disk { r, theta, y } => {
+                glm::vec3(polar_x(r, theta), y, polar_y(r, theta))
+            }
         }
     }
 
@@ -45,10 +38,8 @@ impl SurfacePoint {
                 let z_side = polar_y(r, theta);
                 let n = glm::normalize(glm::vec2(x_side, z_side));
                 glm::vec3(n.x, 0.0, n.y)
-            },
-            SurfacePoint::Disk { y, .. } => {
-                glm::vec3(0.0, y.signum(), 0.0)
             }
+            SurfacePoint::Disk { y, .. } => glm::vec3(0.0, y.signum(), 0.0),
         }
     }
 
@@ -59,34 +50,38 @@ impl SurfacePoint {
                 let u = -theta / (2.0 * f32::consts::PI);
                 let v = phi / f32::consts::PI;
                 glm::vec2(u, v)
-            },
+            }
             SurfacePoint::Cylinder { theta, y, .. } => {
                 let u = -theta / (2.0 * f32::consts::PI);
                 let v = -y - 0.5;
                 glm::vec2(u, v)
-            },
+            }
             SurfacePoint::Disk { r, theta, y } => {
                 let u = polar_x(r, theta) + 0.5;
-                let v = 1.0 + y.signum()*(polar_y(r, theta) - 0.5);
+                let v = 1.0 + y.signum() * (polar_y(r, theta) - 0.5);
                 glm::vec2(u, v)
-            },
+            }
         }
     }
 }
 
 pub fn linear_index(row: usize, col: usize, num_cols: usize) -> usize {
-    row*num_cols + col
+    row * num_cols + col
 }
 
-pub fn polar_x(r: f32, theta: f32) -> f32 { r * glm::cos::<>(theta) }
-pub fn polar_y(r: f32, theta: f32) -> f32 { r * glm::sin::<>(theta) }
+pub fn polar_x(r: f32, theta: f32) -> f32 {
+    r * glm::cos(theta)
+}
+pub fn polar_y(r: f32, theta: f32) -> f32 {
+    r * glm::sin(theta)
+}
 
 pub fn spherical_x(r: f32, theta: f32, phi: f32) -> f32 {
-    polar_x(r, theta) * glm::sin::<>(phi) // x = r*cos(theta)*sin(phi)
+    polar_x(r, theta) * glm::sin(phi) // x = r*cos(theta)*sin(phi)
 }
 pub fn spherical_y(r: f32, _theta: f32, phi: f32) -> f32 {
     polar_x(r, phi) // y = r*cos(phi)
 }
 pub fn spherical_z(r: f32, theta: f32, phi: f32) -> f32 {
-    polar_y(r, theta) * glm::sin::<>(phi) // z = r*sin(theta)*sin(phi)
+    polar_y(r, theta) * glm::sin(phi) // z = r*sin(theta)*sin(phi)
 }

@@ -35,14 +35,13 @@ impl VertexP {
 }
 impl Vertex for VertexP {
     fn vertex_attrib_markers() -> Vec<VBOAttribMarker> {
-        let markers: Vec<VBOAttribMarker> = vec![
-            VBOAttribMarker::new(
-                types::ShaderAttrib::POSITION,
-                types::VertexAttrib::FLOAT,
-                3,
-                gl::FALSE,
-                0)
-        ];
+        let markers: Vec<VBOAttribMarker> = vec![VBOAttribMarker::new(
+            types::ShaderAttrib::POSITION,
+            types::VertexAttrib::FLOAT,
+            3,
+            gl::FALSE,
+            0,
+        )];
         markers
     }
 
@@ -76,13 +75,15 @@ impl Vertex for VertexUV {
                 types::VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                0),
+                0,
+            ),
             VBOAttribMarker::new(
                 types::ShaderAttrib::TEXCOORD0,
                 types::VertexAttrib::FLOAT,
                 2,
                 gl::FALSE,
-                ::std::mem::size_of::<glm::Vec3>())
+                ::std::mem::size_of::<glm::Vec3>(),
+            ),
         ];
         markers
     }
@@ -107,7 +108,7 @@ pub struct VertexNT {
 }
 impl VertexNT {
     pub fn new(pos: glm::Vec3, normal: glm::Vec3, uv: glm::Vec2) -> VertexNT {
-        VertexNT { pos, n: normal, uv}
+        VertexNT { pos, n: normal, uv }
     }
 }
 impl Vertex for VertexNT {
@@ -118,19 +119,22 @@ impl Vertex for VertexNT {
                 types::VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                0),
+                0,
+            ),
             VBOAttribMarker::new(
                 types::ShaderAttrib::NORMAL,
                 types::VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                ::std::mem::size_of::<glm::Vec3>()),
+                ::std::mem::size_of::<glm::Vec3>(),
+            ),
             VBOAttribMarker::new(
                 types::ShaderAttrib::TEXCOORD0,
                 types::VertexAttrib::FLOAT,
                 2,
                 gl::FALSE,
-                ::std::mem::size_of::<glm::Vec3>() * 2)
+                ::std::mem::size_of::<glm::Vec3>() * 2,
+            ),
         ];
         markers
     }
@@ -165,13 +169,15 @@ impl Vertex for VertexN {
                 types::VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                0),
+                0,
+            ),
             VBOAttribMarker::new(
                 types::ShaderAttrib::NORMAL,
                 types::VertexAttrib::FLOAT,
                 3,
                 gl::FALSE,
-                ::std::mem::size_of::<glm::Vec3>())
+                ::std::mem::size_of::<glm::Vec3>(),
+            ),
         ];
         markers
     }
@@ -190,11 +196,11 @@ impl From<(glm::Vec3, glm::Vec3)> for VertexN {
 /// for passing to
 /// [`glVertexAttribPointer`](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml).
 pub struct VBOAttribMarker {
-    pub name: types::ShaderAttrib, // attribute location
+    pub name: types::ShaderAttrib,      // attribute location
     pub data_type: types::VertexAttrib, // primitive type in VBO
     pub elements_per_vertex: gl::types::GLint,
     pub normalize: gl::types::GLboolean, // normalise data
-    pub offset: usize, // offset in bytes from start of array to first element
+    pub offset: usize,                   // offset in bytes from start of array to first element
 }
 
 impl VBOAttribMarker {
@@ -203,16 +209,14 @@ impl VBOAttribMarker {
         data_type: types::VertexAttrib,
         elements_per_vertex: gl::types::GLint,
         normalize: gl::types::GLboolean,
-        offset: usize
-    ) -> VBOAttribMarker
-    {
+        offset: usize,
+    ) -> VBOAttribMarker {
         VBOAttribMarker {
             name,
             data_type,
             elements_per_vertex,
             normalize,
-            offset
+            offset,
         }
     }
 }
-

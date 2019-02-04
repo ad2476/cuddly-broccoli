@@ -1,6 +1,6 @@
-use std;
 use gl;
-use rendergl::{self,types};
+use rendergl::{self, types};
+use std;
 
 /// Vertex Buffer Object.
 ///
@@ -9,13 +9,12 @@ pub struct VBO {
     id: gl::types::GLuint,
     markers: Vec<rendergl::VBOAttribMarker>,
     buffer_size: usize, // number of vertices
-//    f32_per_vert: usize, // elements per vertex
+    //    f32_per_vert: usize, // elements per vertex
     stride: gl::types::GLint,
 }
 
 impl VBO {
-    pub fn from_data<T: rendergl::Vertex>(data: &[T]) -> VBO
-    {
+    pub fn from_data<T: rendergl::Vertex>(data: &[T]) -> VBO {
         let mut id: gl::types::GLuint = 0;
         let buffer_size = data.len();
         let stride = std::mem::size_of::<T>();
@@ -27,16 +26,23 @@ impl VBO {
                 gl::ARRAY_BUFFER,
                 (buffer_size * stride) as gl::types::GLsizeiptr, // size in bytes
                 data.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW
+                gl::STATIC_DRAW,
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         }
-        VBO { id, markers, buffer_size, stride: stride as i32 }
+        VBO {
+            id,
+            markers,
+            buffer_size,
+            stride: stride as i32,
+        }
     }
 
     // FIXME this bind-unbind semantics feels unsafe/not rusty
     fn bind(&self) {
-        unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, self.id); }
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.id);
+        }
     }
 
     /// Enable this vertex array. VBO **must be bound**.
@@ -50,20 +56,24 @@ impl VBO {
                     m.data_type.into(),
                     m.normalize,
                     self.stride,
-                    m.offset as *const gl::types::GLvoid
+                    m.offset as *const gl::types::GLvoid,
                 );
             }
         }
     }
 
     fn unbind(&self) {
-        unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0); }
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        }
     }
 }
 
 impl Drop for VBO {
     fn drop(&mut self) {
-        unsafe { gl::DeleteBuffers(1, &self.id); }
+        unsafe {
+            gl::DeleteBuffers(1, &self.id);
+        }
     }
 }
 
@@ -88,7 +98,7 @@ impl IBO {
                 gl::ELEMENT_ARRAY_BUFFER,
                 (buffer_size * stride) as gl::types::GLsizeiptr, // size in bytes
                 data.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW
+                gl::STATIC_DRAW,
             );
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); // unbind
         }
@@ -96,17 +106,23 @@ impl IBO {
     }
 
     pub fn bind(&self) {
-        unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id); }
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id);
+        }
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); }
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+        }
     }
 }
 
 impl Drop for IBO {
     fn drop(&mut self) {
-        unsafe { gl::DeleteBuffers(1, &self.id); }
+        unsafe {
+            gl::DeleteBuffers(1, &self.id);
+        }
     }
 }
 
@@ -129,17 +145,11 @@ pub struct VAO {
 }
 
 impl VAO {
-    pub fn new(
-        vbo: &VBO,
-        ibo: Option<&IBO>,
-        layout: types::GlLayout
-    ) -> VAO
-    {
+    pub fn new(vbo: &VBO, ibo: Option<&IBO>, layout: types::GlLayout) -> VAO {
         let mut id: gl::types::GLuint = 0;
         // number of vertices to render is either the vertices in the VBO, or the indices
         //  in the IBO
-        let num_vertices = ibo
-            .map_or(vbo.buffer_size, |i| i.buffer_size) as gl::types::GLsizei;
+        let num_vertices = ibo.map_or(vbo.buffer_size, |i| i.buffer_size) as gl::types::GLsizei;
         unsafe {
             gl::GenVertexArrays(1, &mut id);
             gl::BindVertexArray(id);
@@ -149,18 +159,27 @@ impl VAO {
             Some(i) => {
                 i.bind(); // associate IBO with this VAO
                 DrawMethod::INDEXED
-            },
+            }
             None => DrawMethod::ARRAYS,
         };
         vbo.enable();
         vbo.unbind();
         ibo.map_or((), |i| i.unbind());
-        unsafe { gl::BindVertexArray(0); }
-        VAO { id, num_vertices, layout, draw_method }
+        unsafe {
+            gl::BindVertexArray(0);
+        }
+        VAO {
+            id,
+            num_vertices,
+            layout,
+            draw_method,
+        }
     }
 
     pub fn bind(&self) {
-        unsafe { gl::BindVertexArray(self.id); }
+        unsafe {
+            gl::BindVertexArray(self.id);
+        }
     }
 
     pub fn draw(&self) {
@@ -169,21 +188,27 @@ impl VAO {
                 gl::DrawArrays(self.layout.into(), 0, self.num_vertices);
             },
             DrawMethod::INDEXED => unsafe {
-                gl::DrawElements(self.layout.into(),
-                                 self.num_vertices,
-                                 gl::UNSIGNED_INT,
-                                 0 as *const gl::types::GLvoid);
+                gl::DrawElements(
+                    self.layout.into(),
+                    self.num_vertices,
+                    gl::UNSIGNED_INT,
+                    0 as *const gl::types::GLvoid,
+                );
             },
         }
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindVertexArray(0); }
+        unsafe {
+            gl::BindVertexArray(0);
+        }
     }
 }
 
 impl Drop for VAO {
     fn drop(&mut self) {
-        unsafe { gl::DeleteVertexArrays(1, &self.id); }
+        unsafe {
+            gl::DeleteVertexArrays(1, &self.id);
+        }
     }
 }

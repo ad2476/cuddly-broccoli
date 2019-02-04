@@ -1,21 +1,22 @@
-#[macro_use] extern crate failure;
+#[macro_use]
+extern crate failure;
 
-extern crate sdl2;
 extern crate gl;
 extern crate glm;
-extern crate num;
 extern crate image;
+extern crate num;
+extern crate sdl2;
 
+pub mod camera;
+pub mod mesh;
 pub mod rendergl;
 pub mod resources;
-pub mod ui;
 pub mod shape;
-pub mod camera;
+pub mod ui;
 pub mod util;
-pub mod mesh;
 
 use failure::err_msg;
-use sdl2::event::{WindowEvent, Event};
+use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
 
 const FPS: u64 = 60;
@@ -31,24 +32,30 @@ fn run() -> Result<(), failure::Error> {
     'main: loop {
         for event in view.poll_events() {
             match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'main
-                },
-                Event::Window { win_event: WindowEvent::Resized(x,y), .. } => {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'main,
+                Event::Window {
+                    win_event: WindowEvent::Resized(x, y),
+                    ..
+                } => {
                     scene.on_resize(x, y)?;
-                },
-                Event::KeyDown { keycode: Some(key), .. } => {
+                }
+                Event::KeyDown {
+                    keycode: Some(key), ..
+                } => {
                     scene.on_keydown(&key)?;
-                },
+                }
                 Event::MouseWheel { y, direction, .. } => {
                     let dir = match direction {
                         sdl2::mouse::MouseWheelDirection::Flipped => -1,
                         _ => 1,
                     };
-                    scene.on_scroll(y*dir)?;
-                },
-                _ => {},
+                    scene.on_scroll(y * dir)?;
+                }
+                _ => {}
             }
         }
 

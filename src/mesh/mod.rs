@@ -1,13 +1,13 @@
 //! 3D mesh implementation.
-use std::cmp::{min,max};
+use std::cmp::{max, min};
 
+use camera::Camera;
 use glm;
 use num;
-use util;
-use camera::Camera;
+use rendergl::{types, Program, VertexN};
 use resources::ResourceLoader;
-use rendergl::{Program, VertexN, types};
-use shape::{ShapeGL, Drawable, DrawError, InitError};
+use shape::{DrawError, Drawable, InitError, ShapeGL};
+use util;
 
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
@@ -25,7 +25,8 @@ impl Drawable for MeshObject {
     fn draw(&self, camera: &Camera) -> Result<(), DrawError> {
         self.program.bind();
         self.program.set_uniform("view", &camera.view)?;
-        self.program.set_uniform("perspective", &camera.perspective)?;
+        self.program
+            .set_uniform("perspective", &camera.perspective)?;
         self.program.set_uniform("model", &self.transform)?;
         self.program.set_uniform("u_time", &self.time)?;
         self.shapegl.draw_vertices();
@@ -42,10 +43,9 @@ pub struct DepthMesh {
 }
 
 impl DepthMesh {
-
     /// Create a new `DepthMesh` given a 2D grid of depth samples.
     pub fn new(depth_map: &[f32], num_rows: usize, num_cols: usize) -> DepthMesh {
-        let mut mesh_data: Vec<glm::Vec3> = Vec::with_capacity(num_rows*num_cols);
+        let mut mesh_data: Vec<glm::Vec3> = Vec::with_capacity(num_rows * num_cols);
 
         // construct a mesh of unit scale
         for i in 0..num_rows {
@@ -61,7 +61,7 @@ impl DepthMesh {
             mesh_data,
             size: glm::vec3(2.0, 1.0, 2.0),
             num_rows,
-            num_cols
+            num_cols,
         }
     }
 
@@ -74,7 +74,7 @@ impl DepthMesh {
             program,
             shapegl,
             transform: glm::ext::scale(&num::one(), self.size),
-            time: 0
+            time: 0,
         })
     }
 
@@ -95,15 +95,15 @@ impl DepthMesh {
             for j in 0..num_cols {
                 let v = self.get_position(i, j);
                 let n = self.get_normal(i, j);
-                vertex_data.push((*v,n).into());
+                vertex_data.push((*v, n).into());
             }
         }
 
-        for i in 0..(num_rows-1) {
+        for i in 0..(num_rows - 1) {
             for j in (0..num_cols).rev() {
-                self.push_indices(&mut index_data, (i,j), (i+1,j));
+                self.push_indices(&mut index_data, (i, j), (i + 1, j));
             }
-            self.push_indices(&mut index_data, (i+1,0), (i+1,num_cols-1));
+            self.push_indices(&mut index_data, (i + 1, 0), (i + 1, num_cols - 1));
         }
 
         ShapeGL::new(&vertex_data, &index_data, types::GlLayout::TriangleStrip)
@@ -118,7 +118,7 @@ impl DepthMesh {
     fn get_normal(&self, row: i32, col: i32) -> glm::Vec3 {
         let p = self.get_position(row, col);
         let mut normals: Vec<glm::Vec3> = Vec::new();
-        let inc = glm::ext::quarter_pi::<f32,f32>();
+        let inc = glm::ext::quarter_pi::<f32, f32>();
 
         // compute neighbouring normals
         for i in 0..8 {

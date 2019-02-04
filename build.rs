@@ -13,10 +13,7 @@ fn main() {
         .expect("failed to find target dir")
         .join(env::var("PROFILE").unwrap());
 
-
-    copy_files(
-        &manifest_dir.join("assets"),
-        &exec_path.join("assets"));
+    copy_files(&manifest_dir.join("assets"), &exec_path.join("assets"));
 }
 
 fn find_target_dir(candidate: &Path) -> Option<&Path> {
@@ -40,7 +37,8 @@ fn copy_files(from: &Path, to: &Path) {
             if entry.file_type().is_dir() {
                 DirBuilder::new()
                     .recursive(true)
-                    .create(target_path).expect("failed to create target dir");
+                    .create(target_path)
+                    .expect("failed to create target dir");
             } else {
                 fs::copy(entry.path(), &target_path).expect("failed to copy");
             }
