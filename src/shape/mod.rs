@@ -155,7 +155,6 @@ impl ShapeGL {
             let theta = -lon_stepsz * (theta_step as f32);
             for phi_step in 0..(lat_strips + 1) {
                 let phi = lat_stepsz * (phi_step as f32);
-
                 let p = SurfacePoint::Sphere { r: R, theta, phi };
                 vert_data.push(T::from_point3d(&p));
             }
@@ -212,7 +211,6 @@ impl ShapeGL {
         // generate vertices
         for theta_step in 0..slices {
             let theta = -theta_stepsz * (theta_step as f32);
-
             // top cap slice
             for r_step in 0..(strips + 1) {
                 let r = r_stepsz * (r_step as f32);

@@ -12,7 +12,7 @@ pub struct ShaderShape {
     shapegl: ShapeGL,
     texture: rendergl::texture::Texture,
     transform: glm::Mat4,
-    time: u32,
+    time: f32,
 }
 type ShaderVertex = rendergl::VertexNT;
 impl ShaderShape {
@@ -43,7 +43,7 @@ impl ShaderShape {
             shapegl,
             texture,
             transform: num::one(),
-            time: 0,
+            time: 0.0,
         })
     }
 
@@ -70,7 +70,7 @@ impl ShaderShape {
 
 impl Drawable for ShaderShape {
     fn tick(&mut self) {
-        self.time += 1;
+        self.time += 1.0;
         self.transform = glm::ext::rotate(&self.transform, 0.005, glm::vec3(0.0, 1.0, 0.0));
     }
 
