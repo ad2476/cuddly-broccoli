@@ -1,7 +1,7 @@
-use gl;
-use glm;
 use crate::rendergl::types;
 use crate::util::SurfacePoint;
+use gl;
+use glm;
 
 /// Defines an interface for generic vertex data representations.
 ///

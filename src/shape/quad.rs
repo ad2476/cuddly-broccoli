@@ -1,8 +1,8 @@
 use crate::camera::Camera;
-use glm::{self, vec2, vec3};
-use num;
 use crate::rendergl;
 use crate::rendergl::types::*;
+use glm::{self, vec2, vec3};
+use num;
 use std::rc::Rc;
 
 use crate::shape::{DrawError, Drawable};

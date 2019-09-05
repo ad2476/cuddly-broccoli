@@ -18,9 +18,9 @@
 //! texture.unbind();
 //! ```
 
+use crate::rendergl::types::{TextureParam, TextureTarget};
 use gl;
 use image::{DynamicImage, GenericImageView};
-use crate::rendergl::types::{TextureParam, TextureTarget};
 
 /// Enumerate valid `GLenum` variants for `gl::TEXTURE_*_FILTER` parameters.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

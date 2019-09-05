@@ -2,12 +2,12 @@
 use std::cmp::{max, min};
 
 use crate::camera::Camera;
-use glm;
-use num;
 use crate::rendergl::{types, Program, VertexN};
 use crate::resources::ResourceLoader;
 use crate::shape::{DrawError, Drawable, InitError, ShapeGL};
 use crate::util;
+use glm;
+use num;
 
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
