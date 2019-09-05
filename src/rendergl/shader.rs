@@ -18,8 +18,8 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString, OsStr};
 use std::path::{Path, PathBuf};
 
-use rendergl::{uniform, UniformSet};
-use resources::{self, ResourceLoader};
+use crate::rendergl::{uniform, UniformSet};
+use crate::resources::{self, ResourceLoader};
 
 /// Error enum for shaders
 #[derive(Debug, Fail)]
@@ -150,8 +150,8 @@ impl Program {
     /// Set an element of a uniform array.
     ///
     /// For example, consider your shader contains a `uniform mat3 lights[10]`.
-    /// ```
-    /// # pass `light_data` to the third light
+    /// ```rust
+    /// // pass `light_data` to the third light
     /// program.set_uniform_by_index("lights", light_data, 2);
     /// ```
     pub fn set_uniform_by_index<T: UniformSet>(
@@ -215,7 +215,7 @@ impl Program {
             .clone()
             .into_string()
             .map_err(|e| format!("{}", e))?
-            .trim_right_matches(char::from(0))
+            .trim_end_matches(char::from(0))
             .replace("[0]", "");
 
         let mut array: Vec<gl::types::GLint> = Vec::with_capacity(size);

@@ -1,5 +1,5 @@
 use gl;
-use rendergl::{self, types};
+use crate::rendergl::{self, types};
 use std;
 
 /// Vertex Buffer Object.

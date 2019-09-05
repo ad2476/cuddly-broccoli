@@ -1,13 +1,13 @@
 //! 3D mesh implementation.
 use std::cmp::{max, min};
 
-use camera::Camera;
+use crate::camera::Camera;
 use glm;
 use num;
-use rendergl::{types, Program, VertexN};
-use resources::ResourceLoader;
-use shape::{DrawError, Drawable, InitError, ShapeGL};
-use util;
+use crate::rendergl::{types, Program, VertexN};
+use crate::resources::ResourceLoader;
+use crate::shape::{DrawError, Drawable, InitError, ShapeGL};
+use crate::util;
 
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {

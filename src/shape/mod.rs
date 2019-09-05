@@ -19,11 +19,11 @@
 //! ```
 use glm::ext::consts;
 
-use camera::Camera;
-use rendergl::types::*;
-use rendergl::{self, uniform};
-use resources;
-use util::SurfacePoint;
+use crate::camera::Camera;
+use crate::rendergl::types::*;
+use crate::rendergl::{self, uniform};
+use crate::resources;
+use crate::util::SurfacePoint;
 
 mod quad;
 mod shadershape;

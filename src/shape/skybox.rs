@@ -2,10 +2,10 @@ use glm;
 use image::DynamicImage;
 use std::path::Path;
 
-use camera::Camera;
-use rendergl;
-use resources;
-use shape::{DrawError, Drawable, InitError, ShapeGL};
+use crate::camera::Camera;
+use crate::rendergl;
+use crate::resources;
+use crate::shape::{DrawError, Drawable, InitError, ShapeGL};
 
 /// A `Drawable` skybox.
 pub struct Skybox {

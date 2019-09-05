@@ -3,12 +3,12 @@ use glm::vec3;
 use sdl2::keyboard::Keycode;
 use std::path::Path;
 
-use mesh;
-use rendergl;
-use resources::{self, ResourceLoader};
-use shape::{self, Drawable};
+use crate::mesh;
+use crate::rendergl;
+use crate::resources::{self, ResourceLoader};
+use crate::shape::{self, Drawable};
 
-use camera::*;
+use crate::camera::*;
 
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -98,7 +98,7 @@ impl Scene {
             .build();
 
         let sphere = shape::ShaderShape::sphere(&loader, 100, 100)?;
-        //        let cylinder = shape::ShaderShape::cylinder(&loader, 50, 50)?;
+        //let cylinder = shape::ShaderShape::cylinder(&loader, 50, 50)?;
         let skybox = shape::Skybox::new(&loader)?;
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();

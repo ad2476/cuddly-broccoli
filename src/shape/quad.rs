@@ -1,11 +1,11 @@
-use camera::Camera;
+use crate::camera::Camera;
 use glm::{self, vec2, vec3};
 use num;
-use rendergl;
-use rendergl::types::*;
+use crate::rendergl;
+use crate::rendergl::types::*;
 use std::rc::Rc;
 
-use shape::{DrawError, Drawable};
+use crate::shape::{DrawError, Drawable};
 
 /// A `Drawable` quad
 pub struct Quad {

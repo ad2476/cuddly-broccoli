@@ -20,7 +20,7 @@
 
 use gl;
 use image::{DynamicImage, GenericImageView};
-use rendergl::types::{TextureParam, TextureTarget};
+use crate::rendergl::types::{TextureParam, TextureTarget};
 
 /// Enumerate valid `GLenum` variants for `gl::TEXTURE_*_FILTER` parameters.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

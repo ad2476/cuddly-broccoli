@@ -1,10 +1,10 @@
 use image::DynamicImage;
 use std::path::Path;
 
-use camera::Camera;
-use rendergl;
-use resources;
-use shape::*;
+use crate::camera::Camera;
+use crate::rendergl;
+use crate::resources;
+use crate::shape::*;
 
 /// Shape that uses the "shader" vertex and fragment shaders.
 pub struct ShaderShape {
