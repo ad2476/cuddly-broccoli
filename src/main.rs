@@ -1,12 +1,6 @@
 #[macro_use]
 extern crate failure;
 
-extern crate gl;
-extern crate glm;
-extern crate image;
-extern crate num;
-extern crate sdl2;
-
 pub mod camera;
 pub mod mesh;
 pub mod rendergl;
