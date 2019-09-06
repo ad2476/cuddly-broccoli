@@ -18,6 +18,7 @@
 //! let sphere = Sphere::new(&shader, 50, 50);
 //! ```
 use glm::ext::consts;
+use tobj;
 
 use crate::camera::Camera;
 use crate::rendergl::types::*;
@@ -120,6 +121,84 @@ impl ShapeGL {
             _vbo: vbo,
             ibo,
             vao,
+        }
+    }
+
+    /// Construct a new `ShapeGL` from `tobj` mesh data.
+    pub fn from_mesh(mesh: &tobj::Mesh) -> ShapeGL {
+        let mut stride: usize = 3;
+
+        if !mesh.normals.is_empty() {
+            stride += 3;
+        }
+        if !mesh.texcoords.is_empty() {
+            stride += 2;
+        }
+
+        let vertex_size = stride * std::mem::size_of::<f32>();
+
+        if vertex_size == std::mem::size_of::<rendergl::VertexN>() {
+            // vertex position + normal
+            let positions = mesh
+                .positions
+                .chunks(3)
+                .map(|chunk| glm::Vec3::new(chunk[0], chunk[1], chunk[2]));
+            let normals = mesh
+                .normals
+                .chunks(3)
+                .map(|chunk| glm::Vec3::new(chunk[0], chunk[1], chunk[2]));
+
+            let vertex_data: Vec<rendergl::VertexN> = positions
+                .zip(normals)
+                .map(|(v, n)| rendergl::VertexN::new(v, n))
+                .collect();
+            ShapeGL::new(&vertex_data, &mesh.indices, GlLayout::Triangles)
+        } else if vertex_size == std::mem::size_of::<rendergl::VertexUV>() {
+            // vertex position and texcoords
+            let positions = mesh
+                .positions
+                .chunks(3)
+                .map(|chunk| glm::Vec3::new(chunk[0], chunk[1], chunk[2]));
+            let texcoords = mesh
+                .texcoords
+                .chunks(2)
+                .map(|chunk| glm::Vec2::new(chunk[0], chunk[1]));
+
+            let vertex_data: Vec<rendergl::VertexUV> = positions
+                .zip(texcoords)
+                .map(|(v, t)| rendergl::VertexUV::new(v, t))
+                .collect();
+            ShapeGL::new(&vertex_data, &mesh.indices, GlLayout::Triangles)
+        } else if vertex_size == std::mem::size_of::<rendergl::VertexNT>() {
+            // vertex position, normal and texcoords
+            let positions = mesh
+                .positions
+                .chunks(3)
+                .map(|chunk| glm::Vec3::new(chunk[0], chunk[1], chunk[2]));
+            let normals = mesh
+                .normals
+                .chunks(3)
+                .map(|chunk| glm::Vec3::new(chunk[0], chunk[1], chunk[2]));
+            let texcoords = mesh
+                .texcoords
+                .chunks(2)
+                .map(|chunk| glm::Vec2::new(chunk[0], chunk[1]));
+
+            let vertex_data: Vec<rendergl::VertexNT> = positions
+                .zip(normals)
+                .zip(texcoords)
+                .map(|((v, n), t)| rendergl::VertexNT::new(v, n, t))
+                .collect();
+            ShapeGL::new(&vertex_data, &mesh.indices, GlLayout::Triangles)
+        } else {
+            // vertex_size == std::mem::size_of::<rendergl::VertexP>()
+            // only vertex position
+            let vertex_data: Vec<rendergl::VertexP> = mesh
+                .positions
+                .chunks(3)
+                .map(|chunk| rendergl::VertexP::new(glm::Vec3::new(chunk[0], chunk[1], chunk[2])))
+                .collect();
+            ShapeGL::new(&vertex_data, &mesh.indices, GlLayout::Triangles)
         }
     }
 

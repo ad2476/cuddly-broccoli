@@ -1,5 +1,6 @@
 //! 3D mesh implementation.
 use std::cmp::{max, min};
+use std::path::Path;
 
 use crate::camera::Camera;
 use crate::rendergl::{types, Program, VertexN};
@@ -12,15 +13,33 @@ use num;
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
     program: Program,
-    shapegl: ShapeGL,
+    shapes: Vec<ShapeGL>,
     transform: glm::Mat4,
-    time: u32,
+}
+
+impl MeshObject {
+    pub fn from_obj(
+        loader: &ResourceLoader,
+        objfile: &str,
+        program_name: &str,
+    ) -> Result<MeshObject, InitError> {
+        let (models, _materials) = loader.load_obj(Path::new(objfile))?;
+        let program = Program::from_res(loader, program_name)?;
+        let shapes: Vec<ShapeGL> = models
+            .iter()
+            .map(|model| ShapeGL::from_mesh(&model.mesh))
+            .collect();
+
+        Ok(MeshObject {
+            program,
+            shapes,
+            transform: num::one(),
+        })
+    }
 }
 
 impl Drawable for MeshObject {
-    fn tick(&mut self) {
-        self.time += 1;
-    }
+    fn tick(&mut self) {}
 
     fn draw(&self, camera: &Camera) -> Result<(), DrawError> {
         self.program.bind();
@@ -28,8 +47,9 @@ impl Drawable for MeshObject {
         self.program
             .set_uniform("perspective", &camera.perspective)?;
         self.program.set_uniform("model", &self.transform)?;
-        self.program.set_uniform("u_time", &self.time)?;
-        self.shapegl.draw_vertices();
+        for shapegl in &self.shapes {
+            shapegl.draw_vertices();
+        }
         Ok(())
     }
 }
@@ -72,9 +92,8 @@ impl DepthMesh {
         let program = Program::from_res(loader, "shaders/mesh")?;
         Ok(MeshObject {
             program,
-            shapegl,
+            shapes: vec![shapegl],
             transform: glm::ext::scale(&num::one(), self.size),
-            time: 0,
         })
     }
 
