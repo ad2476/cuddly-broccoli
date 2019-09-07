@@ -3,17 +3,22 @@ use std::cmp::{max, min};
 use std::path::Path;
 
 use crate::camera::Camera;
-use crate::rendergl::{types, Program, VertexN};
+use crate::rendergl::{types, VertexN};
 use crate::resources::ResourceLoader;
 use crate::shape::{DrawError, Drawable, InitError, ShapeGL};
 use crate::util;
 use glm;
 use num;
+use tobj::Material;
+
+mod model;
+pub use model::{MaterialShader, SceneModel};
 
 /// Implements `Drawable` to render a 3D mesh.
 pub struct MeshObject {
-    program: Program,
-    shapes: Vec<ShapeGL>,
+    shader: MaterialShader,
+    models: Vec<SceneModel>,
+    materials: Vec<Material>,
     transform: glm::Mat4,
 }
 
@@ -23,18 +28,29 @@ impl MeshObject {
         objfile: &str,
         program_name: &str,
     ) -> Result<MeshObject, InitError> {
-        let (models, _materials) = loader.load_obj(Path::new(objfile))?;
-        let program = Program::from_res(loader, program_name)?;
-        let shapes: Vec<ShapeGL> = models
-            .iter()
-            .map(|model| ShapeGL::from_mesh(&model.mesh))
-            .collect();
+        let (models, materials) = loader.load_obj(Path::new(objfile))?;
+        let shader = MaterialShader::from_res(loader, program_name)?;
+        let models: Vec<SceneModel> = models.iter().map(|model| model.into()).collect();
 
-        Ok(MeshObject {
-            program,
-            shapes,
+        Ok(MeshObject::new(shader, models, materials))
+    }
+
+    pub fn new(
+        shader: MaterialShader,
+        models: Vec<SceneModel>,
+        materials: Vec<Material>,
+    ) -> MeshObject {
+        let mut default_material = tobj::Material::empty();
+        default_material.diffuse = [0.8; 3];
+
+        let mut materials = materials;
+        materials.push(default_material);
+        MeshObject {
+            shader,
+            models,
+            materials,
             transform: num::one(),
-        })
+        }
     }
 }
 
@@ -42,13 +58,19 @@ impl Drawable for MeshObject {
     fn tick(&mut self) {}
 
     fn draw(&self, camera: &Camera) -> Result<(), DrawError> {
-        self.program.bind();
-        self.program.set_uniform("view", &camera.view)?;
-        self.program
+        self.shader.program.bind();
+        self.shader.program.set_uniform("view", &camera.view)?;
+        self.shader
+            .program
             .set_uniform("perspective", &camera.perspective)?;
-        self.program.set_uniform("model", &self.transform)?;
-        for shapegl in &self.shapes {
-            shapegl.draw_vertices();
+        self.shader.program.set_uniform("model", &self.transform)?;
+        for model in &self.models {
+            let id = match model.material_id {
+                Some(id) => id,
+                None => self.materials.len() - 1,
+            };
+            self.shader.apply_material(&self.materials[id])?;
+            model.shapegl.draw_vertices();
         }
         Ok(())
     }
@@ -89,12 +111,12 @@ impl DepthMesh {
     /// for rendering with OpenGL.
     pub fn build_shape(&self, loader: &ResourceLoader) -> Result<MeshObject, InitError> {
         let shapegl = self.init_buffers();
-        let program = Program::from_res(loader, "shaders/mesh")?;
-        Ok(MeshObject {
-            program,
-            shapes: vec![shapegl],
-            transform: glm::ext::scale(&num::one(), self.size),
-        })
+        let shader = MaterialShader::from_res(loader, "shaders/mesh")?;
+        Ok(MeshObject::new(
+            shader,
+            vec![SceneModel::new(shapegl, None)],
+            Vec::new(),
+        ))
     }
 
     fn push_indices(&self, index_data: &mut Vec<u32>, p1: (i32, i32), p2: (i32, i32)) {

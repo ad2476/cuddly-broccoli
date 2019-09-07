@@ -100,6 +100,7 @@ impl Scene {
         //let sphere = shape::ShaderShape::sphere(&loader, 100, 100)?;
         //let cylinder = shape::ShaderShape::cylinder(&loader, 50, 50)?;
         let mesh = mesh::MeshObject::from_obj(&loader, "models/untitled.obj", "shaders/mesh")?;
+        //let mesh = make_mesh(&loader)?;
         let skybox = shape::Skybox::new(&loader)?;
 
         let mut shapes: Vec<Box<Drawable>> = Vec::new();

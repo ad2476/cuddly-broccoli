@@ -55,8 +55,14 @@ impl UniformSet for glm::Vec2 {
 
 impl UniformSet for glm::Vec3 {
     fn set_uniform_gl(&self, loc: gl::types::GLint) {
+        self.as_array().set_uniform_gl(loc);
+    }
+}
+
+impl UniformSet for [f32; 3] {
+    fn set_uniform_gl(&self, loc: gl::types::GLint) {
         unsafe {
-            gl::Uniform3fv(loc, 1, self.as_array().as_ptr());
+            gl::Uniform3fv(loc, 1, self.as_ptr());
         }
     }
 }
